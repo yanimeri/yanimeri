@@ -81,7 +81,7 @@ function renderDiscover(){const q=$('#discoverSearch').value.toLowerCase(),g=$('
 
 function normalizeJikan(x){
  const img=x.images?.webp?.large_image_url||x.images?.jpg?.large_image_url||x.images?.webp?.image_url||x.images?.jpg?.image_url||'';
- return {id:'mal'+x.mal_id,title:x.title_english||x.title||x.title_japanese||'Untitled anime',genres:(x.genres||[]).map(g=>g.name).join(' · ')||'Anime',image:img,episode:0,status:'Plan to watch',rating:'',year:x.year||x.aired?.prop?.from?.year||'',emoji:'✿',mediaType:String(x.type||''),releaseStatus:String(x.status||''),startDate:x.aired?.from||''};
+ return {id:'mal'+x.mal_id,title:x.title_english||x.title||x.title_japanese||'Untitled anime',genres:(x.genres||[]).map(g=>g.name).join(' · ')||'Anime',image:img,episode:0,status:'Plan to watch',rating:'',year:x.year||x.aired?.prop?.from?.year||'',emoji:'✿',mediaType:String(x.type||'').toLowerCase(),releaseStatus:String(x.status||''),startDate:x.aired?.from||''};
 }
 function normalizeKitsu(x,included=[]){
  const a=x.attributes||{},p=a.posterImage||{};
@@ -94,6 +94,21 @@ function normalizeAniList(x){
  const t=x.title||{},title=t.english||t.romaji||t.native||'Untitled anime';
  const formats={TV:'tv',TV_SHORT:'tv',MOVIE:'movie',OVA:'ova',ONA:'ona',SPECIAL:'special'};
  return {id:'anilist'+x.id,title,altTitles:[t.english,t.romaji,t.native,...(x.synonyms||[])].filter(Boolean),genres:(x.genres||[]).join(' · ')||'Anime',image:x.coverImage?.extraLarge||x.coverImage?.large||'',episode:0,status:'Plan to watch',rating:'',year:x.startDate?.year||'',emoji:'✿',mediaType:formats[x.format]||String(x.format||''),releaseStatus:x.status==='FINISHED'?'finished':x.status==='RELEASING'?'current':'',startDate:x.startDate?.year&&x.startDate?.month&&x.startDate?.day?String(x.startDate.year).padStart(4,'0')+'-'+String(x.startDate.month).padStart(2,'0')+'-'+String(x.startDate.day).padStart(2,'0'):''};
+}
+function resolveSearchQuery(query){
+ const normalized=String(query||'').toLowerCase().replace(/[×✕]/g,'x').replace(/[^a-z0-9]+/g,' ').trim();
+ // Common shorthand: users often type “spy” when they mean Spy x Family.
+ if(normalized==='spy'||normalized==='spy family'||normalized==='spy x family')return 'Spy x Family';
+ return String(query||'').trim();
+}
+function matchesSearchIntent(item,query){
+ const normalized=String(query||'').toLowerCase().replace(/[×✕]/g,'x').replace(/[^a-z0-9]+/g,' ').trim();
+ const titles=[item?.title,...(item?.altTitles||[])].filter(Boolean).join(' ').toLowerCase().replace(/[×✕]/g,'x').replace(/[^a-z0-9]+/g,' ');
+ if(normalized==='spy'||normalized==='spy family'||normalized==='spy x family'){
+  // Keep the Spy x Family franchise, but not unrelated titles or crossovers that merely contain “spy”.
+  return titles.includes('spy x family')&&!/\\b(vs|versus|crossover)\\b/i.test(String(item?.title||''));
+ }
+ return true;
 }
 async function fetchAniList({page=1,search='',genre=''}={}){
  const query=`query ($page:Int,$search:String,$genre:String) {
@@ -216,7 +231,7 @@ async function loadAnime(reset=false){
  const requestId=++animeRequestId;
  if(reset){apiPage=1;catalogue=[]}
  const status=$('#catalogueStatus'),more=$('#loadMoreAnime');
- const requestedQuery=apiMode==='search'?apiQuery.trim():'';
+ const requestedQuery=apiMode==='search'?resolveSearchQuery(apiQuery):'';
  const selectedGenre=apiMode==='genre'?apiQuery.trim():'';
  status.textContent=apiMode==='search'?'Searching anime titles and alternate names…':apiMode==='genre'?'Finding anime in this genre…':'Loading anime…';
  more.disabled=true;
@@ -224,7 +239,7 @@ async function loadAnime(reset=false){
   const result=await fetchAniList({page:apiPage,search:requestedQuery,genre:selectedGenre});
   if(requestId!==animeRequestId)return;
   const seen=new Set(catalogue.map(x=>String(x.id)));
-  catalogue=catalogue.concat(result.items.filter(x=>!seen.has(String(x.id))));
+  catalogue=catalogue.concat(result.items.filter(x=>matchesSearchIntent(x,apiQuery)&&!seen.has(String(x.id))));
   renderDiscover();
   status.textContent=apiMode==='search'?'“'+requestedQuery+'” · '+catalogue.length+' matching anime':apiMode==='genre'?selectedGenre+' · '+catalogue.length+' anime found':catalogue.length+' anime loaded';
   apiPage++;more.textContent='Load more anime ↓';more.disabled=!result.hasNext;
@@ -236,7 +251,7 @@ async function loadAnime(reset=false){
    let fallback=[];
    if(apiMode==='search'){
     const data=await fetchWithRetry('https://api.jikan.moe/v4/anime?q='+encodeURIComponent(requestedQuery)+'&page=1&limit=25&sfw=true',1);
-    fallback=(data.data||[]).map(normalizeJikan).filter(isUsableAnime);
+    fallback=(data.data||[]).map(normalizeJikan).filter(x=>isUsableAnime(x)&&matchesSearchIntent(x,apiQuery));
    }else if(apiMode==='genre'){
     const genreId=diverseAnimeGenres.find(x=>x.name.toLowerCase()===selectedGenre.toLowerCase())?.id;
     if(genreId){const data=await fetchWithRetry('https://api.jikan.moe/v4/anime?genres='+genreId+'&order_by=popularity&sort=desc&limit=25&sfw=true',1);fallback=(data.data||[]).map(normalizeJikan).filter(isUsableAnime)}
