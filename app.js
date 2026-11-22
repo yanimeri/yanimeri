@@ -97,16 +97,17 @@ function normalizeAniList(x){
 }
 function resolveSearchQuery(query){
  const normalized=String(query||'').toLowerCase().replace(/[×✕]/g,'x').replace(/[^a-z0-9]+/g,' ').trim();
- // Common shorthand: users often type “spy” when they mean Spy x Family.
- if(normalized==='spy'||normalized==='spy family'||normalized==='spy x family')return 'Spy x Family';
+ // Search the broader spy keyword so both Spy x Family and Spy Classroom can appear.
+ if(['spy','spy family','spy x family','spy classroom','spy kyoushitsu','spy room'].includes(normalized))return 'spy';
  return String(query||'').trim();
 }
 function matchesSearchIntent(item,query){
  const normalized=String(query||'').toLowerCase().replace(/[×✕]/g,'x').replace(/[^a-z0-9]+/g,' ').trim();
  const titles=[item?.title,...(item?.altTitles||[])].filter(Boolean).join(' ').toLowerCase().replace(/[×✕]/g,'x').replace(/[^a-z0-9]+/g,' ');
- if(normalized==='spy'||normalized==='spy family'||normalized==='spy x family'){
-  // Keep the Spy x Family franchise, but not unrelated titles or crossovers that merely contain “spy”.
-  return titles.includes('spy x family')&&!/\b(vs|versus|crossover)\b/i.test(String(item?.title||''));
+ if(['spy','spy family','spy x family','spy classroom','spy kyoushitsu','spy room'].includes(normalized)){
+  // Include the two requested anime franchises, including Spy Classroom's sequel; exclude unrelated spy keyword matches and crossovers.
+  const wanted=titles.includes('spy x family')||titles.includes('spy classroom')||titles.includes('spy kyoushitsu')||titles.includes('spy room');
+  return wanted&&!/\b(vs|versus|crossover)\b/i.test(String(item?.title||''));
  }
  return true;
 }
