@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const email = document.getElementById("authEmail").value.trim();
+    const identifier = document.getElementById("authEmail").value.trim();
     const password = document.getElementById("authPassword").value;
     const name = document.getElementById("authName").value.trim();
     const username = usernameInput.value.trim().replace(/^@/,"").toLowerCase();
@@ -92,8 +92,16 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
       } else {
-        const { error } = await yanimeriSupabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (identifier.includes("@")) {
+          const { error } = await yanimeriSupabase.auth.signInWithPassword({ email: identifier, password });
+          if (error) throw error;
+        } else {
+          const { data, error } = await yanimeriSupabase.functions.invoke("login-with-username", { body: { username: identifier.replace(/^@/, "").toLowerCase(), password } });
+          if (error) throw error;
+          if (!data?.access_token || !data?.refresh_token) throw new Error("Could not log in. Check your username and password.");
+          const { error: sessionError } = await yanimeriSupabase.auth.setSession({ access_token: data.access_token, refresh_token: data.refresh_token });
+          if (sessionError) throw sessionError;
+        }
       }
       window.location.reload();
     } catch (e) { authMessage(e.message || "Something went wrong. Please try again.", true); }
