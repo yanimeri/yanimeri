@@ -23,7 +23,8 @@ const companionChoices = [
  {id:'c4',name:'Hana',mood:'soft & thoughtful',image:'https://i.pinimg.com/736x/1f/2d/f1/1f2df11428af363277c032496c8c1004.jpg',hello:'I hope Yanimeri feels like a little home for you. ♡'},
  {id:'c5',name:'Pudding',mood:'cozy & cuddly',image:'https://i.pinimg.com/736x/45/43/56/4543568996e5edb7d638018903876ef9.jpg',hello:'A little sweetness for your day! Let’s find something lovely to watch. ♡'},
  {id:'c6',name:'Kiki',mood:'bubbly & mischievous',image:'https://i.pinimg.com/736x/94/14/33/941433fedb6846b6680ec2aee81df1f4.jpg',hello:'Hehe, ready for a new adventure? I picked out some anime for us!'},
- {id:'c7',name:'Lumi',mood:'dreamy & magical',image:'https://i.pinimg.com/736x/28/e9/49/28e94905a8720c035f7b3071be7ed9b8.jpg',hello:'Let’s make today a little more magical, one episode at a time. ✨'}
+ {id:'c7',name:'Lumi',mood:'dreamy & magical',image:'https://i.pinimg.com/736x/28/e9/49/28e94905a8720c035f7b3071be7ed9b8.jpg',hello:'Let’s make today a little more magical, one episode at a time. ✨'},
+ {id:'c8',name:'Bibi',mood:'tiny & full of charm',image:'https://i.pinimg.com/736x/53/ac/93/53ac934e816eae65c910573eac65e669.jpg',hello:'Hiii bestie! I brought a little sparkle to your day. ♡'}
 ];
 let companion = JSON.parse(localStorage.getItem('yanimeri_companion') || 'null');
 let account = JSON.parse(localStorage.getItem('yanimeri_demo_account') || 'null');
