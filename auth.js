@@ -61,6 +61,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const usernameInput = document.getElementById("authUsername");
   const identifierLabel = document.getElementById("authIdentifierLabel");
   const identifierInput = document.getElementById("authEmail");
+  // Ensure sign-in starts with signup-only fields hidden.
+  nameWrap.hidden = true;
+  usernameWrap.hidden = true;
+  document.getElementById("authName").required = false;
+  usernameInput.required = false;
   if (toggle) toggle.addEventListener("click", () => {
     mode = mode === "signin" ? "signup" : "signin";
     title.textContent = mode === "signin" ? "Welcome back ♡" : "Create your account ♡";
