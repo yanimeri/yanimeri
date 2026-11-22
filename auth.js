@@ -57,12 +57,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const submit = document.getElementById("authSubmit");
   const toggle = document.getElementById("authToggle");
   const nameWrap = document.getElementById("authNameWrap");
+  const usernameWrap = document.getElementById("authUsernameWrap");
+  const usernameInput = document.getElementById("authUsername");
   if (toggle) toggle.addEventListener("click", () => {
     mode = mode === "signin" ? "signup" : "signin";
     title.textContent = mode === "signin" ? "Welcome back ♡" : "Create your account ♡";
     submit.textContent = mode === "signin" ? "Log in" : "Create account";
     toggle.textContent = mode === "signin" ? "New here? Create an account" : "Already have an account? Log in";
     nameWrap.hidden = mode === "signin";
+    usernameWrap.hidden = mode === "signin";
+    document.getElementById("authName").required = mode === "signup";
+    usernameInput.required = mode === "signup";
+    document.getElementById("authPassword").autocomplete = mode === "signin" ? "current-password" : "new-password";
     authMessage("");
   });
   form.addEventListener("submit", async (event) => {
@@ -70,16 +76,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const email = document.getElementById("authEmail").value.trim();
     const password = document.getElementById("authPassword").value;
     const name = document.getElementById("authName").value.trim();
+    const username = usernameInput.value.trim().replace(/^@/,"").toLowerCase();
     submit.disabled = true;
     authMessage(mode === "signin" ? "Logging you in…" : "Creating your account…");
     try {
       if (mode === "signup") {
+        if (!name) throw new Error("Please enter a display name.");
+        if (!/^[a-z0-9_]{3,20}$/.test(username)) throw new Error("Username must be 3–20 characters: letters, numbers or underscores.");
         const { data, error } = await yanimeriSupabase.auth.signUp({
-          email, password, options: { data: { display_name: name || email.split("@")[0] } }
+          email, password, options: { data: { display_name: name, username } }
         });
         if (error) throw error;
         if (!data.session) {
-          authMessage("Account created! Check your email to confirm it, then log in.");
+          authMessage("Account created! Check your email to confirm it, then log in. Your username is reserved for your account.");
           return;
         }
       } else {
