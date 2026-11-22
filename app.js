@@ -91,7 +91,7 @@ async function fetchWithRetry(url,attempts=3){
  let lastError;
  // Kitsu is a JSON:API service and rejects the generic application/json Accept
  // header with HTTP 406. Jikan uses ordinary JSON.
- const isKitsu=/kitsu\\.io/i.test(url);
+ const isKitsu=/kitsu\.io/i.test(url);
  const headers=isKitsu
   ? {'Accept':'application/vnd.api+json','Content-Type':'application/vnd.api+json'}
   : {'Accept':'application/json'};
