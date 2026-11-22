@@ -222,7 +222,7 @@ $('#helperCharacter').onclick=()=>{$('#helperPopover').hidden=!$('#helperPopover
 $('#helperClose').onclick=()=>$('#helperPopover').hidden=true;
 $$('[data-help-page]').forEach(b=>b.onclick=()=>{$('#helperPopover').hidden=true;go(b.dataset.helpPage);toast(`Let's visit ${b.textContent.toLowerCase()}!`)});
 
-function renderAll(){renderHome();renderDiscover();renderLibrary();renderDiary();renderProfile();applyTheme();renderIdeas()}
+function renderAll(){renderHome();renderDiscover();renderLibrary();renderDiary();renderProfile();$('.mini-profile b').textContent=profile.name||'Little star';$('.mini-profile .avatar').innerHTML=profile.avatarImage?`<img src="${profile.avatarImage}" alt="">`:esc(profile.avatar||'🌷');applyTheme();renderIdeas()}
 renderAll();showOnboarding();loadAnime(true);
 
 })();
