@@ -361,9 +361,17 @@ $('#continueToCompanions').onclick=()=>{
  if(!name||!email||!email.includes('@')){toast('Add your name and a valid email first ♡');return}
  account={name,email};profile.name=name;persist();$('#accountStep').hidden=true;$('#companionStep').hidden=false;renderCompanionChoices();
 };
+$('#changeCompanion').onclick=()=>{
+ selectedCompanionId=companion?.id||'';
+ $('#accountStep').hidden=true;$('#companionStep').hidden=false;
+ $('#finishOnboarding').textContent='Save my companion ♡';
+ $('#onboardingOverlay').hidden=false;renderCompanionChoices();
+};
 $('#finishOnboarding').onclick=()=>{
  const chosen=companionChoices.find(c=>c.id===selectedCompanionId);if(!chosen)return;
- companion=chosen;persist();$('#onboardingOverlay').hidden=true;renderHome();setupCompanionHelper();toast(`You and ${chosen.name} are ready! ♡`);
+ companion=chosen;persist();$('#onboardingOverlay').hidden=true;
+ $('#finishOnboarding').textContent='Choose my companion ♡';
+ renderHome();setupCompanionHelper();toast(`You and ${chosen.name} are ready! ♡`);
 };
 function setupCompanionHelper(){
  if(!companion)return;const c=companionChoices.find(x=>x.id===companion.id)||companionChoices[0];
