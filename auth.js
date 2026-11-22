@@ -64,6 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Ensure sign-in starts with signup-only fields hidden.
   nameWrap.hidden = true;
   usernameWrap.hidden = true;
+  nameWrap.style.display = "none";
+  usernameWrap.style.display = "none";
   document.getElementById("authName").required = false;
   usernameInput.required = false;
   if (toggle) toggle.addEventListener("click", () => {
@@ -73,6 +75,8 @@ document.addEventListener("DOMContentLoaded", () => {
     toggle.textContent = mode === "signin" ? "New here? Create an account" : "Already have an account? Log in";
     nameWrap.hidden = mode === "signin";
     usernameWrap.hidden = mode === "signin";
+    nameWrap.style.display = mode === "signup" ? "block" : "none";
+    usernameWrap.style.display = mode === "signup" ? "block" : "none";
     identifierLabel.firstChild.textContent = mode === "signin" ? "Email or username" : "Email address";
     identifierInput.placeholder = mode === "signin" ? "you@example.com or your_username" : "you@example.com";
     identifierInput.autocomplete = mode === "signin" ? "username" : "email";
