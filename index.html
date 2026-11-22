@@ -28,8 +28,9 @@
   <h1 id="authTitle">Welcome back <em>to your corner.</em></h1>
   <p class="auth-subtitle">Log in to keep your anime world saved wherever you go.</p>
   <form id="authForm">
-   <label id="authNameWrap" hidden>Your name<input class="field" id="authName" maxlength="24" placeholder="What should we call you?"></label>
    <label>Email address<input class="field" id="authEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+   <label id="authNameWrap" hidden>Display name<input class="field" id="authName" maxlength="24" autocomplete="nickname" placeholder="What should we call you?"></label>
+   <label id="authUsernameWrap" hidden>Username<input class="field" id="authUsername" maxlength="20" minlength="3" pattern="[A-Za-z0-9_]{3,20}" autocomplete="username" placeholder="e.g. yasmii_07"><small class="privacy-foot">3–20 letters, numbers or underscores. This is your unique Yanimeri username.</small></label>
    <label>Password<input class="field" id="authPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"></label>
    <button class="primary-btn full-btn" id="authSubmit" type="submit">Log in</button>
   </form>
@@ -116,7 +117,7 @@
       <section id="profile" class="page">
         <div class="page-intro"><p class="eyebrow">MAKE YOURSELF AT HOME</p><h1>My <em>profile.</em></h1><p>Personalise your little corner. Your profile is saved to your account.</p></div>
         <div class="profile-preview"><div class="profile-banner" id="profileBanner"></div><div class="profile-info"><div class="big-avatar" id="profileAvatar">🌷</div><div><h2 id="profileNameDisplay">Little star</h2><p id="profileBioDisplay">Collecting stories, one episode at a time ♡</p></div></div></div>
-        <div class="settings-card"><h3>Profile details</h3><label>Display name<input class="field" id="profileName" maxlength="24" value="Little star"></label><label>Unique username<input class="field" id="profileUsername" maxlength="20" minlength="3" pattern="[A-Za-z0-9_]{3,20}" autocomplete="username" placeholder="e.g. yasmii_07"><small class="privacy-foot">Your username is unique and can be used to find you when chatting arrives. Use 3–20 letters, numbers or underscores. You can change it later if the new one is available.</small></label><label>Bio<input class="field" id="profileBio" maxlength="90" value="Collecting stories, one episode at a time ♡"></label>
+        <div class="settings-card"><h3>Profile details</h3><label>Display name<input class="field" id="profileName" maxlength="24" value="Little star"><small class="privacy-foot" id="displayNameCooldown">You can change your display name once every 24 hours.</small></label><label>Unique username<input class="field" id="profileUsername" maxlength="20" minlength="3" pattern="[A-Za-z0-9_]{3,20}" autocomplete="username" placeholder="e.g. yasmii_07"><small class="privacy-foot" id="usernameCooldown">Your username is unique. You can change it once every 30 days.</small></label><label>Bio<input class="field" id="profileBio" maxlength="90" value="Collecting stories, one episode at a time ♡"></label>
         <label>Your profile picture<input class="field" id="avatarUpload" type="file" accept="image/*"></label>
         <label class="camera-label"><input id="cameraUpload" type="file" accept="image/*" capture="user"><span class="camera-button">Use camera</span><small>but seriously which gorgeous being uses camera for a pfp?</small></label>
         <label>Your own banner<input class="field" id="bannerUpload" type="file" accept="image/*"></label>
