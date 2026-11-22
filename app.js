@@ -121,17 +121,19 @@ const diverseAnimeGenres = [
  {id:37,name:'Supernatural'},{id:14,name:'Horror'},{id:26,name:'Girls Love'},
  {id:28,name:'Boys Love'}
 ];
-async function loadDiverseAnime(){
+async function loadDiverseAnime(requestId){
  const collected=new Map();
- let requests=0;
- for(const genre of diverseAnimeGenres){
-  if(collected.size>=220)break;
-  try{
-   const data=await fetchWithRetry(`https://api.jikan.moe/v4/anime?genres=${genre.id}&order_by=popularity&sort=desc&page=1&limit=25&sfw=true`,2);
-   (data.data||[]).map(normalizeJikan).filter(x=>x.title).forEach(x=>collected.set(x.id,x));
-  }catch(error){console.warn('Could not load '+genre.name+' anime:',error)}
-  requests++;
-  if(collected.size<220)await new Promise(r=>setTimeout(r,420));
+ for(const page of [1,2]){
+  for(const genre of diverseAnimeGenres){
+   if(requestId!==animeRequestId)return null;
+   if(collected.size>=220)break;
+   try{
+    const data=await fetchWithRetry(`https://api.jikan.moe/v4/anime?genres=${genre.id}&order_by=popularity&sort=desc&page=${page}&limit=25&sfw=true`,2);
+    (data.data||[]).map(normalizeJikan).filter(x=>x.title).forEach(x=>collected.set(x.id,x));
+   }catch(error){console.warn('Could not load '+genre.name+' anime:',error)}
+   if(collected.size<220)await new Promise(r=>setTimeout(r,420));
+  }
+  if(collected.size>=200)break;
  }
  return [...collected.values()];
 }
@@ -147,7 +149,8 @@ async function loadAnime(reset=false){
   let mapped=[],hasNext=false;
   if(apiMode==='search'&&!requestedQuery){apiMode='top'}
   if(apiMode==='top'&&apiPage===1){
-   mapped=await loadDiverseAnime();
+   mapped=await loadDiverseAnime(requestId);
+   if(!mapped)return;
    if(requestId!==animeRequestId)return;
    hasNext=true;
    if(mapped.length<200){
