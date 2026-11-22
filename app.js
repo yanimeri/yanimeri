@@ -81,15 +81,28 @@ function renderDiscover(){const q=$('#discoverSearch').value.toLowerCase(),g=$('
 
 function normalizeJikan(x){
  const img=x.images?.webp?.large_image_url||x.images?.jpg?.large_image_url||x.images?.webp?.image_url||x.images?.jpg?.image_url||'';
- return {id:'mal'+x.mal_id,title:x.title_english||x.title||x.title_japanese||'Untitled anime',genres:(x.genres||[]).map(g=>g.name).join(' · ')||'Anime',image:img,episode:0,status:'Plan to watch',rating:'',year:x.year||x.aired?.prop?.from?.year||'',emoji:'✿'};
+ return {id:'mal'+x.mal_id,title:x.title_english||x.title||x.title_japanese||'Untitled anime',genres:(x.genres||[]).map(g=>g.name).join(' · ')||'Anime',image:img,episode:0,status:'Plan to watch',rating:'',year:x.year||x.aired?.prop?.from?.year||'',emoji:'✿',mediaType:String(x.type||''),releaseStatus:String(x.status||''),startDate:x.aired?.from||''};
 }
 function normalizeKitsu(x){
  const a=x.attributes||{},p=a.posterImage||{};
- return {id:'kitsu'+x.id,title:a.canonicalTitle||a.titles?.en||a.titles?.en_jp||'Untitled anime',genres:'Anime',image:p.large||p.original||p.medium||'',episode:0,status:'Plan to watch',rating:'',year:a.startDate?Number(a.startDate.slice(0,4)):'',emoji:'✿'};
+ return {id:'kitsu'+x.id,title:a.canonicalTitle||a.titles?.en||a.titles?.en_jp||'Untitled anime',genres:'Anime',image:p.large||p.original||p.medium||'',episode:0,status:'Plan to watch',rating:'',year:a.startDate?Number(a.startDate.slice(0,4)):'',emoji:'✿',mediaType:String(a.subtype||''),releaseStatus:String(a.status||''),startDate:a.startDate||''};
 }
 function isUsableAnime(item){
  const title=String(item?.title||'').trim();
- return !!title&&!/^deleted(?:\b|\s)/i.test(title)&&!!String(item?.image||'').trim();
+ const allowedTypes=['tv','movie','ova','ona','special'];
+ const type=String(item?.mediaType||'').trim().toLowerCase();
+ const release=String(item?.releaseStatus||'').trim().toLowerCase();
+ const today=new Date().toISOString().slice(0,10);
+ const futureStart=!!item?.startDate&&item.startDate>today;
+ const releasedStatus=['finished','current','finished airing','currently airing'];
+ const knownRelease=release?releasedStatus.includes(release):!!item?.startDate&&!futureStart;
+ return !!title&&!/^deleted(?:\\b|\\s)/i.test(title)&&!!String(item?.image||'').trim()&&allowedTypes.includes(type)&&knownRelease&&!futureStart;
+}
+function matchesAnimeSearch(item,query){
+ const ignored=new Set(['x','the','a','an','and','of','part','season','movie','tv']);
+ const words=String(query||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().split(/\\s+/).filter(w=>w.length>1&&!ignored.has(w));
+ const title=String(item?.title||'').toLowerCase();
+ return words.length===0||words.every(word=>title.includes(word));
 }
 async function fetchWithRetry(url,attempts=3){
  let lastError;
@@ -207,17 +220,17 @@ async function loadAnime(reset=false){
     try{
      const kitsuUrl=`https://kitsu.io/api/edge/anime?filter%5Btext%5D=${encodeURIComponent(requestedQuery)}&page%5Blimit%5D=20&page%5Boffset%5D=${(apiPage-1)*20}`;
      const result=await fetchWithRetry(kitsuUrl,1);
-     mapped=(result.data||[]).map(normalizeKitsu).filter(isUsableAnime);
+     mapped=(result.data||[]).map(normalizeKitsu).filter(item=>isUsableAnime(item)&&matchesAnimeSearch(item,requestedQuery));
      hasNext=!!result.links?.next;
      if(!mapped.length){
       const fallback=await fetchWithRetry(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(requestedQuery)}&page=${apiPage}&limit=25&sfw=true`,1);
-      mapped=(fallback.data||[]).map(normalizeJikan).filter(isUsableAnime);
+      mapped=(fallback.data||[]).map(normalizeJikan).filter(item=>isUsableAnime(item)&&matchesAnimeSearch(item,requestedQuery));
       hasNext=!!fallback.pagination?.has_next_page;
      }
     }catch(kitsuError){
      const jikanUrl=`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(requestedQuery)}&page=${apiPage}&limit=25&sfw=true`;
      const result=await fetchWithRetry(jikanUrl,1);
-     mapped=(result.data||[]).map(normalizeJikan).filter(isUsableAnime);
+     mapped=(result.data||[]).map(normalizeJikan).filter(item=>isUsableAnime(item)&&matchesAnimeSearch(item,requestedQuery));
      hasNext=!!result.pagination?.has_next_page;
     }
    }else{
