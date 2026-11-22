@@ -401,7 +401,7 @@ function renderCompanionChoices(){
  const animeGroups=['Death Note','The Apothecary Diaries','Spy x Family'];
  const card=c=>`<button class="companion-choice ${selectedCompanionId===c.id?'selected':''}" data-companion="${c.id}"><span class="choice-art"><img src="${c.image}" alt="${c.name}" onerror="this.alt='Image link unavailable';this.style.opacity='.25'"></span><b>${c.name}</b><small>${c.mood}</small></button>`;
  $('#companionOptions').innerHTML=`<section class="companion-category"><h2>Fruit Kitties</h2><div class="companion-category-grid">${fruit.map(card).join('')}</div></section><section class="companion-category"><h2>Anime Companions</h2>${animeGroups.map(group=>`<div class="companion-subcategory"><h3>${group}</h3><div class="companion-category-grid">${companionChoices.filter(c=>c.category===group).map(card).join('')}</div></div>`).join('')}</section>`;
- $('#companionOptions [data-companion]').forEach(b=>b.onclick=()=>{
+ $$('#companionOptions [data-companion]').forEach(b=>b.onclick=()=>{
   selectedCompanionId=b.dataset.companion;
   $('#companionOptions .companion-choice').forEach(x=>x.classList.toggle('selected',x===b));
   $('#finishOnboarding').disabled=false;
