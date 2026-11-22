@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const submit = document.getElementById("authSubmit");
   const toggle = document.getElementById("authToggle");
   const nameWrap = document.getElementById("authNameWrap");
-  toggle.addEventListener("click", () => {
+  if (toggle) toggle.addEventListener("click", () => {
     mode = mode === "signin" ? "signup" : "signin";
     title.textContent = mode === "signin" ? "Welcome back ♡" : "Create your account ♡";
     submit.textContent = mode === "signin" ? "Log in" : "Create account";
