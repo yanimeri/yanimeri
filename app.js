@@ -1,3 +1,6 @@
+(async function startYanimeriApp(){
+  const authenticated = await window.yanimeriAuthReady;
+  if (!authenticated) return;
 const starterAnime = [
  {id:'a1',title:'Frieren: Beyond Journey’s End',genres:'Fantasy · Adventure',status:'Watching',episode:8,rating:'',emoji:'❄',tone:'blue'},
  {id:'a2',title:'The Apothecary Diaries',genres:'Mystery · Drama',status:'Plan to watch',episode:0,rating:'',emoji:'🌿',tone:'green'},
@@ -25,7 +28,19 @@ let entries = JSON.parse(localStorage.getItem('yanimeri_diary') || '[]');
 let ideas = JSON.parse(localStorage.getItem('yanimeri_ideas') || '[]');
 let profile = JSON.parse(localStorage.getItem('yanimeri_profile') || 'null') || {name:'Little star',bio:'Collecting stories, one episode at a time ♡',avatar:'🌷',avatarImage:'',bannerImage:'',accent:'#c92f43',background:'#fffafa',font:'DM Sans'};
 let currentFilter='All', selectedAvatar=profile.avatar, catalogue=[], apiPage=1, apiQuery='', apiMode='top', toastTimer;
-function persist(){localStorage.setItem('yanimeri_anime',JSON.stringify(anime));localStorage.setItem('yanimeri_diary',JSON.stringify(entries));localStorage.setItem('yanimeri_profile',JSON.stringify(profile));localStorage.setItem('yanimeri_ideas',JSON.stringify(ideas));localStorage.setItem('yanimeri_companion',JSON.stringify(companion));localStorage.setItem('yanimeri_demo_account',JSON.stringify(account))}
+function persist(){
+ const values={anime,diary:entries,profile,ideas,companion,account};
+ localStorage.setItem('yanimeri_anime',JSON.stringify(anime));
+ localStorage.setItem('yanimeri_diary',JSON.stringify(entries));
+ localStorage.setItem('yanimeri_profile',JSON.stringify(profile));
+ localStorage.setItem('yanimeri_ideas',JSON.stringify(ideas));
+ localStorage.setItem('yanimeri_companion',JSON.stringify(companion));
+ localStorage.setItem('yanimeri_demo_account',JSON.stringify(account));
+ if(window.yanimeriUser){
+  window.yanimeriSupabase.from('user_data').upsert({user_id:window.yanimeriUser.id,data:values,updated_at:new Date().toISOString()},{onConflict:'user_id'})
+   .then(({error})=>{if(error)console.error('Yanimeri cloud save failed:',error)});
+ }
+}
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2400)}
 function go(page){$$('.page').forEach(p=>p.classList.toggle('active',p.id===page));$$('.nav').forEach(n=>n.classList.toggle('active',n.dataset.page===page));window.scrollTo({top:0,behavior:'smooth'});if(page==='library')renderLibrary();if(page==='profile')renderProfile();if(page==='ideas')renderIdeas()}
 $$('.nav').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
@@ -169,8 +184,13 @@ $('#sendIdea').onclick=()=>{const title=$('#ideaTitle').value.trim(),details=$('
 
 function showOnboarding(){
  const overlay=$('#onboardingOverlay');
- if(!account){overlay.hidden=false;$('#accountStep').hidden=false;$('#companionStep').hidden=true}
- else if(!companion){overlay.hidden=false;$('#accountStep').hidden=true;$('#companionStep').hidden=false;renderCompanionChoices()}
+ if(!account){
+  const user=window.yanimeriUser;
+  account={name:user?.user_metadata?.display_name||user?.email?.split('@')[0]||'Little star',email:user?.email||''};
+  profile.name=account.name;
+  persist();
+ }
+ if(!companion){overlay.hidden=false;$('#accountStep').hidden=true;$('#companionStep').hidden=false;renderCompanionChoices()}
  else{overlay.hidden=true;setupCompanionHelper()}
 }
 function renderCompanionChoices(){
@@ -201,3 +221,5 @@ $$('[data-help-page]').forEach(b=>b.onclick=()=>{$('#helperPopover').hidden=true
 
 function renderAll(){renderHome();renderDiscover();renderLibrary();renderDiary();renderProfile();applyTheme();renderIdeas()}
 renderAll();showOnboarding();loadAnime(true);
+
+})();
