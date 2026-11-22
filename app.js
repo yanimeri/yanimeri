@@ -403,7 +403,7 @@ function renderCompanionChoices(){
  $('#companionOptions').innerHTML=`<section class="companion-category"><h2>Fruit Kitties</h2><div class="companion-category-grid">${fruit.map(card).join('')}</div></section><section class="companion-category"><h2>Anime Companions</h2>${animeGroups.map(group=>`<div class="companion-subcategory"><h3>${group}</h3><div class="companion-category-grid">${companionChoices.filter(c=>c.category===group).map(card).join('')}</div></div>`).join('')}</section>`;
  $$('#companionOptions [data-companion]').forEach(b=>b.onclick=()=>{
   selectedCompanionId=b.dataset.companion;
-  $('#companionOptions .companion-choice').forEach(x=>x.classList.toggle('selected',x===b));
+  $$('#companionOptions .companion-choice').forEach(x=>x.classList.toggle('selected',x===b));
   $('#finishOnboarding').disabled=false;
  });
 }
