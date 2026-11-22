@@ -17,14 +17,28 @@ const starterAnime = [
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 
 const companionChoices = [
- {id:'c1',name:'Mochi',mood:'sweet & cheerful',image:'https://i.pinimg.com/474x/76/a8/0e/76a80ebf4cd62c4694bf67984064c6ca.jpg',hello:'Hiii! I hope you enjoy your time here! ♡'},
- {id:'c2',name:'Yuki',mood:'calm & gentle',image:'https://i.pinimg.com/474x/54/5c/74/545c7408bb3d1e9e7776a25f6ccc0ad5.jpg',hello:'Welcome! Let’s find some lovely stories together.'},
- {id:'c3',name:'Mimi',mood:'curious & playful',image:'https://i.pinimg.com/474x/7f/59/6c/7f596c82797a3e1cf9bffce92f4dd373.jpg',hello:'Ooh, so many anime to discover! Where shall we go?'},
- {id:'c4',name:'Hana',mood:'soft & thoughtful',image:'https://i.pinimg.com/736x/1f/2d/f1/1f2df11428af363277c032496c8c1004.jpg',hello:'I hope Yanimeri feels like a little home for you. ♡'},
- {id:'c5',name:'Pudding',mood:'cozy & cuddly',image:'https://i.pinimg.com/736x/45/43/56/4543568996e5edb7d638018903876ef9.jpg',hello:'A little sweetness for your day! Let’s find something lovely to watch. ♡'},
- {id:'c6',name:'Kiki',mood:'bubbly & mischievous',image:'https://i.pinimg.com/736x/94/14/33/941433fedb6846b6680ec2aee81df1f4.jpg',hello:'Hehe, ready for a new adventure? I picked out some anime for us!'},
- {id:'c7',name:'Lumi',mood:'dreamy & magical',image:'https://i.pinimg.com/736x/28/e9/49/28e94905a8720c035f7b3071be7ed9b8.jpg',hello:'Let’s make today a little more magical, one episode at a time. ✨'},
- {id:'c8',name:'Bibi',mood:'tiny & full of charm',image:'https://i.pinimg.com/736x/53/ac/93/53ac934e816eae65c910573eac65e669.jpg',hello:'Hiii bestie! I brought a little sparkle to your day. ♡'}
+ {id:'c1',name:'Mochi',mood:'sweet & cheerful',category:'Fruit Kitties',image:'https://i.pinimg.com/474x/76/a8/0e/76a80ebf4cd62c4694bf67984064c6ca.jpg',hello:'Hiii! I hope you enjoy your time here! ♡'},
+ {id:'c2',name:'Yuki',mood:'calm & gentle',category:'Fruit Kitties',image:'https://i.pinimg.com/474x/54/5c/74/545c7408bb3d1e9e7776a25f6ccc0ad5.jpg',hello:'Welcome! Let’s find some lovely stories together.'},
+ {id:'c3',name:'Mimi',mood:'curious & playful',category:'Fruit Kitties',image:'https://i.pinimg.com/474x/7f/59/6c/7f596c82797a3e1cf9bffce92f4dd373.jpg',hello:'Ooh, so many anime to discover! Where shall we go?'},
+ {id:'c4',name:'Hana',mood:'soft & thoughtful',category:'Fruit Kitties',image:'https://i.pinimg.com/736x/1f/2d/f1/1f2df11428af363277c032496c8c1004.jpg',hello:'I hope Yanimeri feels like a little home for you. ♡'},
+ {id:'c5',name:'Pudding',mood:'cozy & cuddly',category:'Fruit Kitties',image:'https://i.pinimg.com/736x/45/43/56/4543568996e5edb7d638018903876ef9.jpg',hello:'A little sweetness for your day! Let’s find something lovely to watch. ♡'},
+ {id:'c6',name:'Kiki',mood:'bubbly & mischievous',category:'Fruit Kitties',image:'https://i.pinimg.com/736x/94/14/33/941433fedb6846b6680ec2aee81df1f4.jpg',hello:'Hehe, ready for a new adventure? I picked out some anime for us!'},
+ {id:'c7',name:'Lumi',mood:'dreamy & magical',category:'Fruit Kitties',image:'https://i.pinimg.com/736x/28/e9/49/28e94905a8720c035f7b3071be7ed9b8.jpg',hello:'Let’s make today a little more magical, one episode at a time. ✨'},
+ {id:'c8',name:'Bibi',mood:'tiny & full of charm',category:'Fruit Kitties',image:'https://i.pinimg.com/736x/53/ac/93/53ac934e816eae65c910573eac65e669.jpg',hello:'Hiii bestie! I brought a little sparkle to your day. ♡'},
+ {id:'c9',name:'L',mood:'quiet & observant',category:'Death Note',image:'https://i.pinimg.com/736x/a8/4e/74/a84e74dd05933b75811fa1f44a16967b.jpg',hello:'I have a feeling we will find something interesting to watch.'},
+ {id:'c10',name:'Ryuk',mood:'mischievous & curious',category:'Death Note',image:'https://i.pinimg.com/1200x/d5/ad/a6/d5ada6778ca793c49886976808c95727.jpg',hello:'Heh. This should be entertaining. Got any anime recommendations?'},
+ {id:'c11',name:'Light',mood:'clever & composed',category:'Death Note',image:'https://i.pinimg.com/736x/5e/4b/d8/5e4bd87fe6c1258b9e598557b125c12c.jpg',hello:'Let’s make a brilliant choice for your next watch.'},
+ {id:'c12',name:'Misa',mood:'bright & fashionable',category:'Death Note',image:'https://i.pinimg.com/736x/35/75/fd/3575fd42a6143550c6ef0d03871775b2.jpg',hello:'Eee! Let’s find something fabulous to watch together! ♡'},
+ {id:'c13',name:'Maomao',mood:'curious & clever',category:'The Apothecary Diaries',image:'https://i.pinimg.com/736x/62/ef/8c/62ef8c9eb3a14cb2d37c842075dd83eb.jpg',hello:'Something interesting is bound to turn up. Let’s investigate.'},
+ {id:'c14',name:'Jinshi',mood:'graceful & charming',category:'The Apothecary Diaries',image:'https://i.pinimg.com/736x/de/8a/0f/de8a0f35cb11598aa2adc4dd9f9d0754.jpg',hello:'I trust you will find something delightful here.'},
+ {id:'c15',name:'Lady Gyokuyou',mood:'warm & elegant',category:'The Apothecary Diaries',image:'https://i.pinimg.com/736x/f3/4d/b6/f34db69bdbb5dd7b243791c3336a86b1.jpg',hello:'May your time here be as lovely as a spring garden. ♡'},
+ {id:'c16',name:'Lady Lihua',mood:'poised & gentle',category:'The Apothecary Diaries',image:'https://i.pinimg.com/736x/f2/be/58/f2be5833ca8c41e58c77c3c53bf33cf3.jpg',hello:'I hope you discover a story worth cherishing.'},
+ {id:'c17',name:'Lady Lishu',mood:'sweet & shy',category:'The Apothecary Diaries',image:'https://i.pinimg.com/736x/8b/23/79/8b2379218852e78d85d9ba61f7ab9678.jpg',hello:'It is lovely to have you here. ♡'},
+ {id:'c18',name:'Anya',mood:'excited & playful',category:'Spy x Family',image:'https://i.pinimg.com/736x/ea/cf/33/eacf33883dda3b238f3be61164971894.jpg',hello:'Waku waku! Let’s find a super fun anime!'},
+ {id:'c19',name:'Damian',mood:'proud & secretly sweet',category:'Spy x Family',image:'https://i.pinimg.com/736x/28/cb/66/28cb6638b1c65dcbcb57385b408ffe4f.jpg',hello:'Hmph. I suppose we can look for something good.'},
+ {id:'c20',name:'Loid',mood:'calm & dependable',category:'Spy x Family',image:'https://i.pinimg.com/736x/f6/08/f3/f608f3ff2b7c6ddf8a624916be2ce42d.jpg',hello:'I’ll help you find the perfect series for tonight.'},
+ {id:'c21',name:'Becky',mood:'fashionable & bubbly',category:'Spy x Family',image:'https://i.pinimg.com/736x/8a/26/ba/8a26bad423469f18e2f0232a5f529ac7.jpg',hello:'Bestie time! Let’s pick something adorable! ♡'},
+ {id:'c22',name:'Yor',mood:'gentle & protective',category:'Spy x Family',image:'https://i.pinimg.com/736x/25/ad/52/25ad528637267d67f602d25045775f2c.jpg',hello:'I hope you feel safe and happy here. ♡'}
 ];
 let companion = JSON.parse(localStorage.getItem('yanimeri_companion') || 'null');
 let account = JSON.parse(localStorage.getItem('yanimeri_demo_account') || 'null');
@@ -338,8 +352,38 @@ $('#saveProfile').onclick=async()=>{
  persist();applyTheme();renderProfile();$('.mini-profile b').textContent=profile.name;$('.mini-profile .avatar').innerHTML=profile.avatarImage?'<img src="'+profile.avatarImage+'" alt="">':esc(profile.avatar);toast('Your profile and account names are saved ♡')
 };
 function applyTheme(){document.documentElement.style.setProperty('--accent',profile.accent||'#c92f43');document.documentElement.style.setProperty('--page-bg',profile.background||'#fffafa');document.documentElement.style.setProperty('--sidebar-color',profile.sidebarColor||'#fffafa');document.documentElement.style.setProperty('--user-font',`"${profile.font||'DM Sans'}", sans-serif`);document.documentElement.style.setProperty('--font-color',profile.fontColor||'#44363a')}
-function renderIdeas(){$('#ideaList').innerHTML=ideas.map((x,i)=>`<article class="diary-entry"><small>IDEA · ${esc(x.date)}</small><h3>${esc(x.title)}</h3><p>${esc(x.details)}</p><button class="text-btn" data-idea-delete="${i}">Delete idea</button></article>`).join('')||'<div class="empty-hint">Your idea box is empty. Add your first recommendation above ♡</div>';$$('[data-idea-delete]').forEach(b=>b.onclick=()=>{ideas.splice(+b.dataset.ideaDelete,1);persist();renderIdeas()})}
-$('#sendIdea').onclick=()=>{const title=$('#ideaTitle').value.trim(),details=$('#ideaDetails').value.trim();if(!title){toast('Give your idea a little title first ♡');return}ideas.unshift({title,details,date:new Date().toLocaleDateString()});$('#ideaTitle').value='';$('#ideaDetails').value='';persist();renderIdeas();toast('Idea saved on this device ♡')};
+let publicSuggestions=[];
+let mySuggestionVotes={};
+async function renderIdeas(){
+ const list=$('#ideaList');list.innerHTML='<div class="empty-hint">Loading community suggestions…</div>';
+ if(!window.yanimeriUser||!window.yanimeriSupabase){list.innerHTML='<div class="empty-hint">Please log in to view community suggestions ♡</div>';return}
+ const {data,error}=await window.yanimeriSupabase.from('suggestions').select('id,title,details,display_name,created_at,suggestion_votes(user_id,vote)').order('created_at',{ascending:false}).limit(100);
+ if(error){console.error('Could not load community suggestions:',error);list.innerHTML='<div class="empty-hint">Community suggestions are not ready yet. Please try again in a little while ♡</div>';return}
+ publicSuggestions=data||[];
+ mySuggestionVotes={};
+ publicSuggestions.forEach(s=>(s.suggestion_votes||[]).forEach(v=>{if(v.user_id===window.yanimeriUser.id)mySuggestionVotes[s.id]=v.vote}));
+ list.innerHTML=publicSuggestions.map(s=>{
+  const votes=s.suggestion_votes||[],likes=votes.filter(v=>v.vote===1).length,dislikes=votes.filter(v=>v.vote===-1).length,mine=mySuggestionVotes[s.id]||0;
+  return `<article class="diary-entry community-post"><div class="community-post-meta"><small>COMMUNITY SUGGESTION · ${esc(new Date(s.created_at).toLocaleDateString())}</small><span>by ${esc(s.display_name||'Yanimeri member')}</span></div><h3>${esc(s.title)}</h3><p>${esc(s.details||'')}</p><div class="community-votes"><button class="vote-btn ${mine===1?'voted':''}" data-vote="1" data-suggestion="${s.id}" aria-label="Like suggestion">♡ <span>${likes}</span></button><button class="vote-btn ${mine===-1?'voted':''}" data-vote="-1" data-suggestion="${s.id}" aria-label="Dislike suggestion">♡ <span>${dislikes}</span></button></div></article>`;
+ }).join('')||'<div class="empty-hint">No suggestions yet. Be the first to share an idea with the community! ♡</div>';
+ $('#ideaList [data-vote]').forEach(b=>b.onclick=()=>voteOnSuggestion(b.dataset.suggestion,+b.dataset.vote));
+}
+async function voteOnSuggestion(id,vote){
+ const current=mySuggestionVotes[id]||0;
+ let result;
+ if(current===vote) result=await window.yanimeriSupabase.from('suggestion_votes').delete().eq('suggestion_id',id).eq('user_id',window.yanimeriUser.id);
+ else result=await window.yanimeriSupabase.from('suggestion_votes').upsert({suggestion_id:id,user_id:window.yanimeriUser.id,vote},{onConflict:'suggestion_id,user_id'});
+ if(result.error){console.error('Could not save suggestion vote:',result.error);toast('Your vote could not be saved. Please try again ♡');return}
+ await renderIdeas();
+}
+$('#sendIdea').onclick=async()=>{
+ const title=$('#ideaTitle').value.trim(),details=$('#ideaDetails').value.trim();
+ if(!title){toast('Give your idea a little title first ♡');return}
+ if(!window.yanimeriUser){toast('Please log in before sharing a suggestion ♡');return}
+ const {error}=await window.yanimeriSupabase.from('suggestions').insert({user_id:window.yanimeriUser.id,display_name:profile.name||'Yanimeri member',title,details});
+ if(error){console.error('Could not publish suggestion:',error);toast('Your suggestion could not be posted. Please try again ♡');return}
+ $('#ideaTitle').value='';$('#ideaDetails').value='';toast('Your suggestion is now shared with everyone! ♡');await renderIdeas();
+};
 
 function showOnboarding(){
  const overlay=$('#onboardingOverlay');
@@ -353,10 +397,13 @@ function showOnboarding(){
  else{overlay.hidden=true;setupCompanionHelper()}
 }
 function renderCompanionChoices(){
- $('#companionOptions').innerHTML=companionChoices.map(c=>`<button class="companion-choice ${selectedCompanionId===c.id?'selected':''}" data-companion="${c.id}"><span class="choice-art"><img src="${c.image}" alt="${c.name}" onerror="this.alt='Image link unavailable';this.style.opacity='.25'"></span><b>${c.name}</b><small>${c.mood}</small></button>`).join('');
- $$('#companionOptions [data-companion]').forEach(b=>b.onclick=()=>{
+ const fruit=companionChoices.filter(c=>c.category==='Fruit Kitties');
+ const animeGroups=['Death Note','The Apothecary Diaries','Spy x Family'];
+ const card=c=>`<button class="companion-choice ${selectedCompanionId===c.id?'selected':''}" data-companion="${c.id}"><span class="choice-art"><img src="${c.image}" alt="${c.name}" onerror="this.alt='Image link unavailable';this.style.opacity='.25'"></span><b>${c.name}</b><small>${c.mood}</small></button>`;
+ $('#companionOptions').innerHTML=`<section class="companion-category"><h2>Fruit Kitties</h2><div class="companion-category-grid">${fruit.map(card).join('')}</div></section><section class="companion-category"><h2>Anime Companions</h2>${animeGroups.map(group=>`<div class="companion-subcategory"><h3>${group}</h3><div class="companion-category-grid">${companionChoices.filter(c=>c.category===group).map(card).join('')}</div></div>`).join('')}</section>`;
+ $('#companionOptions [data-companion]').forEach(b=>b.onclick=()=>{
   selectedCompanionId=b.dataset.companion;
-  $$('#companionOptions .companion-choice').forEach(x=>x.classList.toggle('selected',x===b));
+  $('#companionOptions .companion-choice').forEach(x=>x.classList.toggle('selected',x===b));
   $('#finishOnboarding').disabled=false;
  });
 }
