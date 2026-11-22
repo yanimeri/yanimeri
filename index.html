@@ -30,15 +30,15 @@
   <p class="eyebrow">WELCOME TO YANIMERI ♡</p>
   <h1 id="authTitle">Welcome back <em>to your corner.</em></h1>
   <p class="auth-subtitle">Log in to keep your anime world saved wherever you go.</p>
-  <form id="authForm">
+  <form id="authForm" novalidate>
    <label id="authIdentifierLabel">Email or username<input class="field" id="authEmail" type="text" autocomplete="username" required placeholder="you@example.com or your_username"></label>
    <label id="authNameWrap" hidden style="display:none">Display name<input class="field" id="authName" maxlength="24" autocomplete="nickname" placeholder="What should we call you?"></label>
    <label id="authUsernameWrap" hidden style="display:none">Username<input class="field" id="authUsername" maxlength="20" minlength="3" pattern="[A-Za-z0-9_]{3,20}" autocomplete="username" placeholder="e.g. yasmii_07"><small class="privacy-foot">3–20 letters, numbers or underscores. This is your unique Yanimeri username.</small></label>
    <label>Password<input class="field" id="authPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"></label>
+   <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
    <button class="primary-btn full-btn" id="authSubmit" type="submit">Log in</button>
   </form>
   <button class="auth-toggle" id="authToggle" type="button">New here? Create an account</button>
-  <p id="authMessage" class="auth-message" role="status"></p>
   <small class="auth-footnote">Your library and diary are private to your account.</small>
  </section>
 </div>
