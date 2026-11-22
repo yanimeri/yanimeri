@@ -222,24 +222,30 @@ async function loadAnime(reset=false){
    return;
   }
   if(apiMode==='search'){
-    // Search Kitsu first because Jikan has been timing out for this site.
+    // Combine Kitsu and Jikan search results so one database's ranking or missing aliases
+    // cannot hide a season, movie, OVA, ONA or special found by the other.
+    let kitsuHasNext=false,jikanHasNext=false;
     try{
      const kitsuUrl=`https://kitsu.io/api/edge/anime?filter%5Btext%5D=${encodeURIComponent(requestedQuery)}&page%5Blimit%5D=20&page%5Boffset%5D=${(apiPage-1)*20}&include=genres`;
      const result=await fetchWithRetry(kitsuUrl,1);
      mapped=(result.data||[]).map(x=>normalizeKitsu(x,result.included||[])).filter(isUsableAnime);
-     hasNext=!!result.links?.next;
-     if(!mapped.length){
-      const fallback=await fetchWithRetry(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(requestedQuery)}&page=${apiPage}&limit=25&sfw=true`,1);
-      mapped=(fallback.data||[]).map(normalizeJikan).filter(isUsableAnime);
-      hasNext=!!fallback.pagination?.has_next_page;
-     }
+     kitsuHasNext=!!result.links?.next;
     }catch(kitsuError){
+     console.warn('Kitsu search unavailable; using Jikan:',kitsuError);
+    }
+    try{
      const jikanUrl=`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(requestedQuery)}&page=${apiPage}&limit=25&sfw=true`;
      const result=await fetchWithRetry(jikanUrl,1);
-     mapped=(result.data||[]).map(normalizeJikan).filter(isUsableAnime);
-     hasNext=!!result.pagination?.has_next_page;
+     const extra=(result.data||[]).map(normalizeJikan).filter(isUsableAnime);
+     const seen=new Set(mapped.map(item=>String(item.title).toLowerCase()));
+     mapped=mapped.concat(extra.filter(item=>!seen.has(String(item.title).toLowerCase())));
+     jikanHasNext=!!result.pagination?.has_next_page;
+    }catch(jikanError){
+     console.warn('Jikan search unavailable; keeping Kitsu results:',jikanError);
     }
-   }else{
+    hasNext=kitsuHasNext||jikanHasNext;
+    if(!mapped.length)throw new Error('No anime results returned');
+   }lse{
     const jikanUrl=`https://api.jikan.moe/v4/top/anime?page=${apiPage}&limit=25&filter=bypopularity`;
     try{
      const data=await fetchWithRetry(jikanUrl,1);
@@ -249,7 +255,7 @@ async function loadAnime(reset=false){
      const offset=(apiPage-1)*20;
      const kitsuUrl=`https://kitsu.io/api/edge/anime?page%5Blimit%5D=20&page%5Boffset%5D=${offset}&sort=-userCount&include=genres`;
      const backup=await fetchWithRetry(kitsuUrl,1);
-     mapped=(backup.data||[]).map(normalizeKitsu).filter(isUsableAnime);
+     mapped=(backup.data||[]).map(x=>normalizeKitsu(x,backup.included||[])).filter(isUsableAnime);
      hasNext=!!backup.links?.next;
     }
    }
