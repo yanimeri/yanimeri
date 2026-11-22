@@ -127,22 +127,28 @@ function mergeCatalogue(items){
  for(const item of items){if(!seen.has(String(item.id))){seen.add(String(item.id));catalogue.push(item)}}
 }
 async function loadDiverseAnime(requestId){
- for(const genre of diverseAnimeGenres){
-  if(requestId!==animeRequestId)return;
-  try{
-   const data=await fetchWithRetry(`https://api.jikan.moe/v4/anime?genres=${genre.id}&order_by=popularity&sort=desc&page=1&limit=25&sfw=true`,2);
+ for(const page of [1,2,3]){
+  for(const genre of diverseAnimeGenres){
    if(requestId!==animeRequestId)return;
-   const before=catalogue.length;
-   mergeCatalogue((data.data||[]).map(normalizeJikan).filter(x=>x.title));
-   if(catalogue.length!==before){
-    renderDiscover();
-    $('#catalogueStatus').textContent=`${catalogue.length} anime loaded · adding ${genre.name.toLowerCase()} and other genres…`;
-   }
-  }catch(error){console.warn('Could not load '+genre.name+' anime:',error)}
-  await new Promise(r=>setTimeout(r,500));
+   if(catalogue.length>=200)break;
+   try{
+    const data=await fetchWithRetry(`https://api.jikan.moe/v4/anime?genres=${genre.id}&order_by=popularity&sort=desc&page=${page}&limit=25&sfw=true`,2);
+    if(requestId!==animeRequestId)return;
+    const before=catalogue.length;
+    mergeCatalogue((data.data||[]).map(normalizeJikan).filter(x=>x.title));
+    if(catalogue.length!==before){
+     renderDiscover();
+     $('#catalogueStatus').textContent=`${catalogue.length} anime loaded · adding ${genre.name.toLowerCase()} and other genres…`;
+    }
+   }catch(error){console.warn('Could not load '+genre.name+' anime:',error)}
+   await new Promise(r=>setTimeout(r,500));
+  }
+  if(catalogue.length>=200)break;
  }
  if(requestId===animeRequestId){
-  $('#catalogueStatus').textContent=`${catalogue.length} anime loaded across a wide range of genres. Search for any title or keep browsing!`;
+  $('#catalogueStatus').textContent=catalogue.length>=200
+   ?`${catalogue.length}+ anime loaded across a wide range of genres. Search for any title or keep browsing!`
+   :`${catalogue.length} anime loaded so far. Some genre requests may have been unavailable; use Load more to continue browsing.`;
   $('#loadMoreAnime').disabled=false;
   $('#loadMoreAnime').textContent='Load more anime ↓';
  }
