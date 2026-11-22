@@ -20,7 +20,10 @@ function showApp() {
 async function loadCloudData(user) {
   const { data, error } = await yanimeriSupabase.from("user_data").select("data").eq("user_id", user.id).maybeSingle();
   if (error) throw error;
-  if (!data?.data) return;
+  if (!data?.data) {
+    for (const key of ["yanimeri_anime","yanimeri_diary","yanimeri_profile","yanimeri_ideas","yanimeri_companion","yanimeri_demo_account"]) localStorage.removeItem(key);
+    return;
+  }
   const values = data.data;
   const map = {
     yanimeri_anime: values.anime,
@@ -32,6 +35,7 @@ async function loadCloudData(user) {
   };
   for (const [key, value] of Object.entries(map)) {
     if (value !== undefined && value !== null) localStorage.setItem(key, JSON.stringify(value));
+    else localStorage.removeItem(key);
   }
 }
 window.yanimeriAuthReady = (async () => {
