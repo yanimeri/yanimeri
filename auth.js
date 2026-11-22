@@ -116,6 +116,10 @@ function initYanimeriAuthForm() {
     document.getElementById("authPassword").autocomplete = mode === "signin" ? "current-password" : "new-password";
     authMessage("");
   });
+  // Surface an immediate response when the submit button is tapped on mobile.
+  submit.addEventListener("click", () => {
+    if (!submit.disabled) authMessage(mode === "signin" ? "Logging you in…" : "Creating your account…");
+  });
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const identifier = document.getElementById("authEmail").value.trim();
