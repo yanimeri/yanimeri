@@ -1,7 +1,7 @@
 (async function startYanimeriApp(){
   const authenticated = await window.yanimeriAuthReady;
   if (!authenticated) return;
-  const { data: ownProfile, error: ownProfileError } = await window.yanimeriSupabase.from('profiles').select('username,display_name').eq('id', window.yanimeriUser.id).maybeSingle();
+  const { data: ownProfile, error: ownProfileError } = await window.yanimeriSupabase.from('profiles').select('username,display_name,username_changed_at,display_name_changed_at').eq('id', window.yanimeriUser.id).maybeSingle();
   if (ownProfileError) console.error('Could not load Yanimeri username:', ownProfileError);
   window.yanimeriProfileData = ownProfile || null;
 const starterAnime = [
@@ -286,7 +286,8 @@ $('#addAnimeTop').onclick=()=>openAnime();
 $('#animeForm').addEventListener('submit',e=>{if(e.submitter?.value==='cancel')return;e.preventDefault();const item={id:editingId||'u'+Date.now(),title:$('#animeTitle').value.trim(),genres:$('#animeGenres').value.trim()||'Anime',status:$('#animeStatus').value,episode:+$('#animeEpisode').value||0,rating:$('#animeRating').value,emoji:'✧',tone:'pink'};if(!item.title)return;if(editingId)anime=anime.map(a=>a.id===editingId?{...a,...item}:a);else anime.unshift(item);persist();dlg.close();renderAll();toast(editingId?'Changes saved':'Added to your library ♡')});
 $('#saveDiary').onclick=()=>{const value=$('#diaryText').value.trim();if(!value){toast('Write a little note first ♡');return}entries.unshift({text:value,date:new Date().toLocaleString()});$('#diaryText').value='';persist();renderDiary();toast('Your private entry was saved')};
 function renderDiary(){$('#diaryEntries').innerHTML=entries.map((e,i)=>`<article class="diary-entry"><small>🔒 PRIVATE · ${esc(e.date)}</small><p>${esc(e.text)}</p><button class="text-btn" data-entry-delete="${i}">Delete entry</button></article>`).join('')||'<div class="empty-hint">Your diary is still blank. That’s okay — write whenever you feel like it.</div>';$$('[data-entry-delete]').forEach(b=>b.onclick=()=>{entries.splice(+b.dataset.entryDelete,1);persist();renderDiary();toast('Entry deleted')})}
-function renderProfile(){profile.accent=profile.accent||'#c92f43';profile.background=profile.background||'#fffafa';profile.font=profile.font||'DM Sans';$('#profileName').value=profile.name;$('#profileBio').value=profile.bio;$('#profileUsername').value=window.yanimeriProfileData?.username||'';$('#profileNameDisplay').textContent=profile.name;$('#profileBioDisplay').textContent=profile.bio;$('#profileAvatar').innerHTML=profile.avatarImage?`<img src="${profile.avatarImage}" alt="Profile picture">`:esc(profile.avatar);$('#profileBanner').style.backgroundImage=profile.bannerImage?`url("${profile.bannerImage}")`:'';
+function cooldownLabel(timestamp,days,label){if(!timestamp)return 'You can change your '+label+' now.';const next=new Date(new Date(timestamp).getTime()+days*86400000);const remaining=next-Date.now();if(remaining<=0)return 'You can change your '+label+' now.';const hours=Math.ceil(remaining/3600000);const daysLeft=Math.floor(hours/24),hoursLeft=hours%24;return 'Next change available in '+(daysLeft?daysLeft+'d ':'')+(hoursLeft?hoursLeft+'h':'')+'.';}
+function renderProfile(){profile.accent=profile.accent||'#c92f43';profile.background=profile.background||'#fffafa';profile.font=profile.font||'DM Sans';$('#profileName').value=profile.name;$('#profileBio').value=profile.bio;$('#profileUsername').value=window.yanimeriProfileData?.username||'';const usernameLocked=!!window.yanimeriProfileData?.username_changed_at&&Date.now()<new Date(window.yanimeriProfileData.username_changed_at).getTime()+30*86400000;const displayLocked=!!window.yanimeriProfileData?.display_name_changed_at&&Date.now()<new Date(window.yanimeriProfileData.display_name_changed_at).getTime()+86400000;$('#profileUsername').disabled=usernameLocked;$('#profileName').disabled=displayLocked;$('#usernameCooldown').textContent=cooldownLabel(window.yanimeriProfileData?.username_changed_at,30,'username');$('#displayNameCooldown').textContent=cooldownLabel(window.yanimeriProfileData?.display_name_changed_at,1,'display name');$('#profileNameDisplay').textContent=profile.name;$('#profileBioDisplay').textContent=profile.bio;$('#profileAvatar').innerHTML=profile.avatarImage?`<img src="${profile.avatarImage}" alt="Profile picture">`:esc(profile.avatar);$('#profileBanner').style.backgroundImage=profile.bannerImage?`url("${profile.bannerImage}")`:'';
  $('#profileBanner').style.backgroundPosition=`${profile.bannerX??50}% ${profile.bannerY??50}%`;
  $('#profileBanner').style.backgroundSize=`${profile.bannerZoom??100}% auto`;
  $('#bannerX').value=profile.bannerX??50;$('#bannerY').value=profile.bannerY??50;$('#bannerZoom').value=profile.bannerZoom??100;updateBannerPreview();$('#accentColor').value=profile.accent;$('#backgroundColor').value=profile.background;$('#fontChoice').value=profile.font;$$('#avatarChoices button').forEach(b=>{b.classList.toggle('chosen',b.textContent===profile.avatar);b.onclick=()=>{selectedAvatar=b.textContent;profile.avatarImage='';$$('#avatarChoices button').forEach(x=>x.classList.toggle('chosen',x===b));$('#profileAvatar').textContent=selectedAvatar}})}
@@ -306,7 +307,32 @@ function updateBannerPreview(){
  $('#profileBanner').style.backgroundSize=`${profile.bannerZoom}% auto`;updateBannerPreview();
 }));
 
-$('#saveProfile').onclick=async()=>{const username=$('#profileUsername').value.trim().replace(/^@/,'').toLowerCase();if(!/^[a-z0-9_]{3,20}$/.test(username)){toast('Username must be 3–20 characters: letters, numbers or _ ♡');$('#profileUsername').focus();return}const {data: savedUsername,error: usernameError}=await window.yanimeriSupabase.from('profiles').upsert({id:window.yanimeriUser.id,username,display_name:$('#profileName').value.trim()||'Little star',updated_at:new Date().toISOString()},{onConflict:'id'}).select('username,display_name').single();if(usernameError){toast(usernameError.code==='23505'?'That username is already taken. Try another ♡':'Could not save username: '+usernameError.message);return}window.yanimeriProfileData=savedUsername;profile={...profile,name:$('#profileName').value.trim()||'Little star',bio:$('#profileBio').value.trim(),avatar:selectedAvatar,accent:$('#accentColor').value,background:$('#backgroundColor').value,font:$('#fontChoice').value,bannerX:+$('#bannerX').value,bannerY:+$('#bannerY').value,bannerZoom:+$('#bannerZoom').value};persist();applyTheme();renderProfile();$('.mini-profile b').textContent=profile.name;$('.mini-profile .avatar').innerHTML=profile.avatarImage?`<img src="${profile.avatarImage}" alt="">`:esc(profile.avatar);toast('Your profile and username are saved ♡')};
+$('#saveProfile').onclick=async()=>{
+ const username=$('#profileUsername').value.trim().replace(/^@/,'').toLowerCase();
+ const displayName=$('#profileName').value.trim();
+ if(!/^[a-z0-9_]{3,20}$/.test(username)){toast('Username must be 3–20 characters: letters, numbers or _ ♡');$('#profileUsername').focus();return}
+ if(!displayName){toast('Please enter a display name ♡');$('#profileName').focus();return}
+ const old=window.yanimeriProfileData||{};
+ const changes={};
+ if(username!==old.username)changes.username=username;
+ if(displayName!==(old.display_name||''))changes.display_name=displayName;
+ let savedProfile=old;
+ if(Object.keys(changes).length){
+  const {data,error}=await window.yanimeriSupabase.from('profiles').update(changes).eq('id',window.yanimeriUser.id).select('username,display_name,username_changed_at,display_name_changed_at').single();
+  if(error){
+   const message=String(error.message||'');
+   if(error.code==='23505')toast('That username is already taken. Try another ♡');
+   else if(message.includes('USERNAME_COOLDOWN'))toast('You can only change your username once every 30 days ♡');
+   else if(message.includes('DISPLAY_NAME_COOLDOWN'))toast('You can only change your display name once every 24 hours ♡');
+   else toast('Could not save account names: '+message);
+   return;
+  }
+  savedProfile=data;
+ }
+ window.yanimeriProfileData=savedProfile;
+ profile={...profile,name:displayName,bio:$('#profileBio').value.trim(),avatar:selectedAvatar,accent:$('#accentColor').value,background:$('#backgroundColor').value,font:$('#fontChoice').value,bannerX:+$('#bannerX').value,bannerY:+$('#bannerY').value,bannerZoom:+$('#bannerZoom').value};
+ persist();applyTheme();renderProfile();$('.mini-profile b').textContent=profile.name;$('.mini-profile .avatar').innerHTML=profile.avatarImage?'<img src="'+profile.avatarImage+'" alt="">':esc(profile.avatar);toast('Your profile and account names are saved ♡')
+};
 function applyTheme(){document.documentElement.style.setProperty('--accent',profile.accent||'#c92f43');document.documentElement.style.setProperty('--page-bg',profile.background||'#fffafa');document.documentElement.style.setProperty('--user-font',`"${profile.font||'DM Sans'}", sans-serif`)}
 function renderIdeas(){$('#ideaList').innerHTML=ideas.map((x,i)=>`<article class="diary-entry"><small>IDEA · ${esc(x.date)}</small><h3>${esc(x.title)}</h3><p>${esc(x.details)}</p><button class="text-btn" data-idea-delete="${i}">Delete idea</button></article>`).join('')||'<div class="empty-hint">Your idea box is empty. Add your first recommendation above ♡</div>';$$('[data-idea-delete]').forEach(b=>b.onclick=()=>{ideas.splice(+b.dataset.ideaDelete,1);persist();renderIdeas()})}
 $('#sendIdea').onclick=()=>{const title=$('#ideaTitle').value.trim(),details=$('#ideaDetails').value.trim();if(!title){toast('Give your idea a little title first ♡');return}ideas.unshift({title,details,date:new Date().toLocaleDateString()});$('#ideaTitle').value='';$('#ideaDetails').value='';persist();renderIdeas();toast('Idea saved on this device ♡')};
