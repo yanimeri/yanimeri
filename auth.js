@@ -9,6 +9,37 @@ function authMessage(message, isError = false) {
   const el = document.getElementById("authMessage");
   if (el) { el.textContent = message; el.dataset.error = isError ? "true" : "false"; }
 }
+
+function friendlyAuthError(error, mode) {
+  const message = String(error?.message || error || "").toLowerCase();
+  if (/failed to fetch|network|load failed|offline|fetch error/.test(message)) {
+    return "Connection problem! Please try again.";
+  }
+  if (/password.*(at least|minimum|too short)|weak password|password should be/.test(message)) {
+    return "Your password needs to be at least 6 characters.";
+  }
+  if (/username.*(already|taken|exist)|duplicate key|unique constraint/.test(message)) {
+    return "That username is already taken. Try another one!";
+  }
+  if (/user not found|no user|account.*not found|email.*not found/.test(message)) {
+    return "We couldn't find an account with those details.";
+  }
+  if (/invalid login credentials|invalid.*(password|credentials)|incorrect password/.test(message)) {
+    return mode === "signin"
+      ? "Oops! That password doesn't seem right. Try again ♡"
+      : "We couldn't create your account. Please check your details and try again.";
+  }
+  if (/already registered|already exists|user already/.test(message)) {
+    return "An account with that email already exists. Try logging in instead.";
+  }
+  if (/rate limit|too many requests/.test(message)) {
+    return "Too many attempts. Please wait a little and try again.";
+  }
+  return mode === "signin"
+    ? "Something went wrong while logging you in. Please try again."
+    : "Something went wrong while creating your account. Please try again.";
+}
+
 function showAuth() {
   document.getElementById("authOverlay").hidden = false;
   document.querySelector(".app-shell").hidden = true;
@@ -40,7 +71,7 @@ async function loadCloudData(user) {
 }
 window.yanimeriAuthReady = (async () => {
   const { data: { session }, error } = await yanimeriSupabase.auth.getSession();
-  if (error) { showAuth(); authMessage(error.message, true); return false; }
+  if (error) { showAuth(); authMessage("Connection problem! Please try again.", true); return false; }
   if (!session) { showAuth(); return false; }
   window.yanimeriUser = session.user;
   try { await loadCloudData(session.user); }
@@ -97,6 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       if (mode === "signup") {
         if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) throw new Error("Please enter a valid email address.");
+        if (password.length < 6) throw new Error("Your password needs to be at least 6 characters.");
         if (!name) throw new Error("Please enter a display name.");
         if (!/^[a-z0-9_]{3,20}$/.test(username)) throw new Error("Username must be 3–20 characters: letters, numbers or underscores.");
         const { data, error } = await yanimeriSupabase.auth.signUp({
@@ -120,7 +152,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
       window.location.reload();
-    } catch (e) { authMessage(e.message || "Something went wrong. Please try again.", true); }
+    } catch (e) {
+      const raw = String(e?.message || e || "").toLowerCase();
+      if (raw.includes("please enter a valid email")) authMessage("Please enter a valid email address.", true);
+      else if (raw.includes("display name")) authMessage("Please enter a display name.", true);
+      else if (raw.includes("username must")) authMessage("Your username must be 3–20 characters: letters, numbers or underscores.", true);
+      else authMessage(friendlyAuthError(e, mode), true);
+    }
     finally { submit.disabled = false; }
   });
 });
