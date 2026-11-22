@@ -97,7 +97,7 @@ async function fetchWithRetry(url,attempts=3){
   : {'Accept':'application/json'};
  for(let i=0;i<attempts;i++){
   const controller=new AbortController();
-  const timeoutId=setTimeout(()=>controller.abort(),10000);
+  const timeoutId=setTimeout(()=>controller.abort(),7000);
   try{
    const response=await fetch(url,{method:'GET',headers,mode:'cors',signal:controller.signal});
    clearTimeout(timeoutId);
@@ -131,53 +131,40 @@ function mergeCatalogue(items){
  for(const item of items){if(!seen.has(String(item.id))){seen.add(String(item.id));catalogue.push(item)}}
 }
 async function loadDiverseAnime(requestId){
- // Jikan can time out for some visitors. If it fails once, stop repeatedly
- // waiting on the same unavailable host and continue with Kitsu's paginated feed.
- let jikanUnavailable=false;
- let kitsuOffset=20; // the first Kitsu page may already have supplied the starter 20
- for(const page of [1,2,3]){
-  for(const genre of diverseAnimeGenres){
+ // Use one paginated feed instead of dozens of separate genre requests.
+ let kitsuOffset=20;
+ let source='kitsu';
+ while(requestId===animeRequestId&&catalogue.length<200){
+  let items=[];
+  try{
+   const data=source==='kitsu'
+    ?await fetchWithRetry(`https://kitsu.io/api/edge/anime?page[limit]=20&page[offset]=${kitsuOffset}&sort=-userCount`,1)
+    :await fetchWithRetry(`https://api.jikan.moe/v4/top/anime?page=${Math.floor(catalogue.length/25)+1}&limit=25&filter=bypopularity`,1);
    if(requestId!==animeRequestId)return;
-   if(catalogue.length>=200)break;
-   let added=0;
-   if(!jikanUnavailable){
-    try{
-     const data=await fetchWithRetry(`https://api.jikan.moe/v4/anime?genres=${genre.id}&order_by=popularity&sort=desc&page=${page}&limit=25&sfw=true`,1);
-     if(requestId!==animeRequestId)return;
-     const before=catalogue.length;
-     mergeCatalogue((data.data||[]).map(normalizeJikan).filter(x=>x.title));
-     added=catalogue.length-before;
-    }catch(error){
-     jikanUnavailable=true;
-     console.warn('Jikan unavailable while loading '+genre.name+'; switching to Kitsu:',error);
-    }
+   items=(data.data||[]).map(source==='kitsu'?normalizeKitsu:normalizeJikan).filter(x=>x.title);
+   if(source==='kitsu'&&(data.data||[]).length)kitsuOffset+=20;
+   if(!items.length)break;
+  }catch(error){
+   if(source==='kitsu'){
+    console.warn('Kitsu pagination unavailable; trying Jikan:',error);
+    source='jikan';
+    continue;
    }
-   // Kitsu fallback is a paginated popular-anime feed, so it can keep the
-   // catalogue growing even when Jikan's genre endpoint is unreachable.
-   if(!added){
-    try{
-     const backup=await fetchWithRetry(`https://kitsu.io/api/edge/anime?page[limit]=20&page[offset]=${kitsuOffset}&sort=-userCount`,2);
-     if(requestId!==animeRequestId)return;
-     const before=catalogue.length;
-     mergeCatalogue((backup.data||[]).map(normalizeKitsu).filter(x=>x.title));
-     added=catalogue.length-before;
-     if((backup.data||[]).length)kitsuOffset+=20;
-    }catch(error){
-     console.warn('Could not load '+genre.name+' fallback anime from Kitsu:',error);
-    }
-   }
-   if(added){
-    renderDiscover();
-    $('#catalogueStatus').textContent=`${catalogue.length} anime loaded · adding more titles and genres…`;
-   }
-   await new Promise(r=>setTimeout(r,450));
+   console.warn('Anime catalogue expansion paused:',error);
+   break;
   }
-  if(catalogue.length>=200)break;
+  const before=catalogue.length;
+  mergeCatalogue(items);
+  if(catalogue.length>before){
+   renderDiscover();
+   $('#catalogueStatus').textContent=`${catalogue.length} anime loaded · adding more in the background…`;
+  }
+  await new Promise(r=>setTimeout(r,180));
  }
  if(requestId===animeRequestId){
   $('#catalogueStatus').textContent=catalogue.length>=200
-   ?`${catalogue.length} anime loaded across a wide range of titles. Search for any title or keep browsing!`
-   :`${catalogue.length} anime loaded so far. Some requests may be unavailable; use Load more to continue browsing.`;
+   ?`${catalogue.length} anime loaded. Enjoy browsing!`
+   :`${catalogue.length} anime loaded so far. Tap Load more anime to continue.`;
   $('#loadMoreAnime').disabled=false;
   $('#loadMoreAnime').textContent='Load more anime ↓';
  }
@@ -192,13 +179,13 @@ async function loadAnime(reset=false){
  try{
   let mapped=[],hasNext=false;
   if(apiMode==='top'&&apiPage===1){
-   // Show a real first page immediately; then enrich it with genre-specific titles.
+   // Load Kitsu's paginated feed first; use one quick Jikan fallback if needed.
    try{
-    const first=await fetchWithRetry('https://api.jikan.moe/v4/top/anime?page=1&limit=25&filter=bypopularity',3);
-    mapped=(first.data||[]).map(normalizeJikan).filter(x=>x.title);
+    const first=await fetchWithRetry('https://kitsu.io/api/edge/anime?page[limit]=20&page[offset]=0&sort=-userCount',1);
+    mapped=(first.data||[]).map(normalizeKitsu).filter(x=>x.title);
    }catch(primaryError){
-    const backup=await fetchWithRetry('https://kitsu.io/api/edge/anime?page[limit]=20&page[offset]=0&sort=-userCount',3);
-    mapped=(backup.data||[]).map(normalizeKitsu).filter(x=>x.title);
+    const backup=await fetchWithRetry('https://api.jikan.moe/v4/top/anime?page=1&limit=25&filter=bypopularity',1);
+    mapped=(backup.data||[]).map(normalizeJikan).filter(x=>x.title);
    }
    if(requestId!==animeRequestId)return;
    catalogue=mapped;
