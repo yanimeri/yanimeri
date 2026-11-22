@@ -87,6 +87,10 @@ function normalizeKitsu(x){
  const a=x.attributes||{},p=a.posterImage||{};
  return {id:'kitsu'+x.id,title:a.canonicalTitle||a.titles?.en||a.titles?.en_jp||'Untitled anime',genres:'Anime',image:p.large||p.original||p.medium||'',episode:0,status:'Plan to watch',rating:'',year:a.startDate?Number(a.startDate.slice(0,4)):'',emoji:'✿'};
 }
+function isUsableAnime(item){
+ const title=String(item?.title||'').trim();
+ return !!title&&!/^deleted(?:\\b|\\s)/i.test(title)&&!!String(item?.image||'').trim();
+}
 async function fetchWithRetry(url,attempts=3){
  let lastError;
  // Kitsu is a JSON:API service and rejects the generic application/json Accept
@@ -128,7 +132,7 @@ const diverseAnimeGenres = [
 let animeRequestId=0;
 function mergeCatalogue(items){
  const seen=new Set(catalogue.map(x=>String(x.id)));
- for(const item of items){if(!seen.has(String(item.id))){seen.add(String(item.id));catalogue.push(item)}}
+ for(const item of items){if(isUsableAnime(item)&&!seen.has(String(item.id))){seen.add(String(item.id));catalogue.push(item)}}
 }
 async function loadDiverseAnime(requestId){
  // Use one paginated feed instead of dozens of separate genre requests.
@@ -141,7 +145,7 @@ async function loadDiverseAnime(requestId){
     ?await fetchWithRetry(`https://kitsu.io/api/edge/anime?page%5Blimit%5D=20&page%5Boffset%5D=${kitsuOffset}&sort=-userCount`,1)
     :await fetchWithRetry(`https://api.jikan.moe/v4/top/anime?page=${Math.floor(catalogue.length/25)+1}&limit=25&filter=bypopularity`,1);
    if(requestId!==animeRequestId)return;
-   items=(data.data||[]).map(source==='kitsu'?normalizeKitsu:normalizeJikan).filter(x=>x.title);
+   items=(data.data||[]).map(source==='kitsu'?normalizeKitsu:normalizeJikan).filter(isUsableAnime);
    if(source==='kitsu'&&(data.data||[]).length)kitsuOffset+=20;
    if(!items.length)break;
   }catch(error){
@@ -182,10 +186,10 @@ async function loadAnime(reset=false){
    // Load Kitsu's paginated feed first; use one quick Jikan fallback if needed.
    try{
     const first=await fetchWithRetry('https://kitsu.io/api/edge/anime?page%5Blimit%5D=20&page%5Boffset%5D=0&sort=-userCount',1);
-    mapped=(first.data||[]).map(normalizeKitsu).filter(x=>x.title);
+    mapped=(first.data||[]).map(normalizeKitsu).filter(isUsableAnime);
    }catch(primaryError){
     const backup=await fetchWithRetry('https://api.jikan.moe/v4/top/anime?page=1&limit=25&filter=bypopularity',1);
-    mapped=(backup.data||[]).map(normalizeJikan).filter(x=>x.title);
+    mapped=(backup.data||[]).map(normalizeJikan).filter(isUsableAnime);
    }
    if(requestId!==animeRequestId)return;
    catalogue=mapped;
@@ -198,28 +202,34 @@ async function loadAnime(reset=false){
    loadDiverseAnime(requestId);
    return;
   }
-  const jikanUrl=apiMode==='search'
-   ?`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(requestedQuery)}&page=${apiPage}&limit=25&sfw=true`
-   :`https://api.jikan.moe/v4/top/anime?page=${apiPage}&limit=25&filter=bypopularity`;
-  try{
-   const data=await fetchWithRetry(jikanUrl,3);
-   mapped=(data.data||[]).map(normalizeJikan).filter(x=>x.title);
-   hasNext=!!data.pagination?.has_next_page;
-  }catch(jikanError){
-   const offset=(apiPage-1)*20;
-   const kitsuUrl=requestedQuery
-    ?`https://kitsu.io/api/edge/anime?filter%5Btext%5D=${encodeURIComponent(requestedQuery)}&page%5Blimit%5D=20&page%5Boffset%5D=${offset}&sort=-userCount`
-    :`https://kitsu.io/api/edge/anime?page%5Blimit%5D=20&page%5Boffset%5D=${offset}&sort=-userCount`;
-   const backup=await fetchWithRetry(kitsuUrl,3);
-   mapped=(backup.data||[]).map(normalizeKitsu).filter(x=>x.title);
-   hasNext=!!backup.links?.next;
-  }
-  if(apiMode==='search'&&!mapped.length&&apiPage===1){
-   const backup=await fetchWithRetry(`https://kitsu.io/api/edge/anime?filter%5Btext%5D=${encodeURIComponent(requestedQuery)}&page%5Blimit%5D=20&page%5Boffset%5D=0&sort=-userCount`,3);
-   mapped=(backup.data||[]).map(normalizeKitsu).filter(x=>x.title);
-   hasNext=!!backup.links?.next;
-  }
-  if(requestId!==animeRequestId)return;
+  if(apiMode==='search'){
+    // Search Kitsu first because Jikan has been timing out for this site.
+    try{
+     const kitsuUrl=`https://kitsu.io/api/edge/anime?filter%5Btext%5D=${encodeURIComponent(requestedQuery)}&page%5Blimit%5D=20&page%5Boffset%5D=${(apiPage-1)*20}`;
+     const result=await fetchWithRetry(kitsuUrl,1);
+     mapped=(result.data||[]).map(normalizeKitsu).filter(isUsableAnime);
+     hasNext=!!result.links?.next;
+    }catch(kitsuError){
+     const jikanUrl=`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(requestedQuery)}&page=${apiPage}&limit=25&sfw=true`;
+     const result=await fetchWithRetry(jikanUrl,1);
+     mapped=(result.data||[]).map(normalizeJikan).filter(isUsableAnime);
+     hasNext=!!result.pagination?.has_next_page;
+    }
+   }else{
+    const jikanUrl=`https://api.jikan.moe/v4/top/anime?page=${apiPage}&limit=25&filter=bypopularity`;
+    try{
+     const data=await fetchWithRetry(jikanUrl,1);
+     mapped=(data.data||[]).map(normalizeJikan).filter(isUsableAnime);
+     hasNext=!!data.pagination?.has_next_page;
+    }catch(jikanError){
+     const offset=(apiPage-1)*20;
+     const kitsuUrl=`https://kitsu.io/api/edge/anime?page%5Blimit%5D=20&page%5Boffset%5D=${offset}&sort=-userCount`;
+     const backup=await fetchWithRetry(kitsuUrl,1);
+     mapped=(backup.data||[]).map(normalizeKitsu).filter(isUsableAnime);
+     hasNext=!!backup.links?.next;
+    }
+   }
+   if(requestId!==animeRequestId)return;
   if(!mapped.length&&apiPage===1)throw new Error('No anime results returned');
   catalogue=apiPage===1?mapped:catalogue.concat(mapped.filter(x=>!catalogue.some(y=>String(y.id)===String(x.id))));
   renderDiscover();
