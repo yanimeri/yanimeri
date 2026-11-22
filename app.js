@@ -81,19 +81,19 @@ function renderDiscover(){const q=$('#discoverSearch').value.toLowerCase(),g=$('
 
 function normalizeJikan(x){
  const img=x.images?.webp?.large_image_url||x.images?.jpg?.large_image_url||x.images?.webp?.image_url||x.images?.jpg?.image_url||'';
- return {id:'mal'+x.mal_id,title:x.title_english||x.title||x.title_japanese||'Untitled anime',genres:(x.genres||[]).map(g=>g.name).join(' · ')||'Anime',image:img,episode:0,status:'Plan to watch',rating:'',year:x.year||x.aired?.prop?.from?.year||'',emoji:'✿',mediaType:String(x.type||'').toLowerCase(),releaseStatus:String(x.status||''),startDate:x.aired?.from||''};
+ return {id:'mal'+x.mal_id,mediaCategory:'ANIME',title:x.title_english||x.title||x.title_japanese||'Untitled anime',genres:(x.genres||[]).map(g=>g.name).join(' · ')||'Anime',image:img,episode:0,status:'Plan to watch',rating:'',year:x.year||x.aired?.prop?.from?.year||'',emoji:'✿',mediaType:String(x.type||'').toLowerCase(),releaseStatus:String(x.status||''),startDate:x.aired?.from||''};
 }
 function normalizeKitsu(x,included=[]){
  const a=x.attributes||{},p=a.posterImage||{};
  const includedGenres=new Map((included||[]).filter(v=>v.type==='genres'||v.type==='categories').map(v=>[String(v.id),v.attributes?.title||v.attributes?.name||'']));
  const genreIds=x.relationships?.genres?.data||[];
  const genreNames=genreIds.map(g=>includedGenres.get(String(g.id))).filter(Boolean);
- return {id:'kitsu'+x.id,title:a.titles?.en||a.titles?.en_jp||a.canonicalTitle||'Untitled anime',genres:genreNames.join(' · ')||'Anime',image:p.large||p.original||p.medium||'',episode:0,status:'Plan to watch',rating:'',year:a.startDate?Number(a.startDate.slice(0,4)):'',emoji:'✿',mediaType:String(a.subtype||''),releaseStatus:String(a.status||''),startDate:a.startDate||''};
+ return {id:'kitsu'+x.id,mediaCategory:'ANIME',title:a.titles?.en||a.titles?.en_jp||a.canonicalTitle||'Untitled anime',genres:genreNames.join(' · ')||'Anime',image:p.large||p.original||p.medium||'',episode:0,status:'Plan to watch',rating:'',year:a.startDate?Number(a.startDate.slice(0,4)):'',emoji:'✿',mediaType:String(a.subtype||''),releaseStatus:String(a.status||''),startDate:a.startDate||''};
 }
 function normalizeAniList(x){
  const t=x.title||{},title=t.english||t.romaji||t.native||'Untitled anime';
  const formats={TV:'tv',TV_SHORT:'tv',MOVIE:'movie',OVA:'ova',ONA:'ona',SPECIAL:'special'};
- return {id:'anilist'+x.id,title,altTitles:[t.english,t.romaji,t.native,...(x.synonyms||[])].filter(Boolean),genres:(x.genres||[]).join(' · ')||'Anime',image:x.coverImage?.extraLarge||x.coverImage?.large||'',episode:0,status:'Plan to watch',rating:'',year:x.startDate?.year||'',emoji:'✿',mediaType:formats[x.format]||String(x.format||''),releaseStatus:x.status==='FINISHED'?'finished':x.status==='RELEASING'?'current':'',startDate:x.startDate?.year&&x.startDate?.month&&x.startDate?.day?String(x.startDate.year).padStart(4,'0')+'-'+String(x.startDate.month).padStart(2,'0')+'-'+String(x.startDate.day).padStart(2,'0'):''};
+ return {id:'anilist'+x.id,mediaCategory:x.type||'ANIME',title,altTitles:[t.english,t.romaji,t.native,...(x.synonyms||[])].filter(Boolean),genres:(x.genres||[]).join(' · ')||'Anime',image:x.coverImage?.extraLarge||x.coverImage?.large||'',episode:0,status:'Plan to watch',rating:'',year:x.startDate?.year||'',emoji:'✿',mediaType:formats[x.format]||String(x.format||''),releaseStatus:x.status==='FINISHED'?'finished':x.status==='RELEASING'?'current':'',startDate:x.startDate?.year&&x.startDate?.month&&x.startDate?.day?String(x.startDate.year).padStart(4,'0')+'-'+String(x.startDate.month).padStart(2,'0')+'-'+String(x.startDate.day).padStart(2,'0'):''};
 }
 function resolveSearchQuery(query){
  const normalized=String(query||'').toLowerCase().replace(/[×✕]/g,'x').replace(/[^a-z0-9]+/g,' ').trim();
@@ -116,7 +116,7 @@ async function fetchAniList({page=1,search='',genre=''}={}){
   Page(page:$page,perPage:50) {
    pageInfo { hasNextPage }
    media(type:ANIME,search:$search,genre:$genre,format_in:[TV,TV_SHORT,MOVIE,OVA,ONA,SPECIAL],status_in:[FINISHED,RELEASING],isAdult:false,sort:POPULARITY_DESC) {
-    id title { english romaji native } synonyms format status startDate { year month day } genres coverImage { large extraLarge }
+    id type title { english romaji native } synonyms format status startDate { year month day } episodes duration genres coverImage { large extraLarge }
    }
   }
  }`;
@@ -129,6 +129,7 @@ async function fetchAniList({page=1,search='',genre=''}={}){
 function isUsableAnime(item){
  const title=String(item?.title||'').trim();
  const allowedTypes=['tv','movie','ova','ona','special'];
+ const mediaCategory=String(item?.mediaCategory||'').toUpperCase();
  const type=String(item?.mediaType||'').trim().toLowerCase();
  const release=String(item?.releaseStatus||'').trim().toLowerCase();
  const today=new Date().toISOString().slice(0,10);
@@ -138,7 +139,7 @@ function isUsableAnime(item){
  // Brand campaigns, commercials and other marketing tie-ins are not watchable anime entries.
  const marketingPattern=/\b(campaign|commercial|advertisement|advertising|promotional|promotion|collaboration|collab|tie[ -]?in|brand[ -]?project)\b/i;
  const isMarketing=marketingPattern.test(title);
- return !!title&&!/^deleted(?:\b|\s)/i.test(title)&&!isMarketing&&!!String(item?.image||'').trim()&&allowedTypes.includes(type)&&knownRelease&&!futureStart;
+ return mediaCategory==='ANIME'&&!!title&&!/^deleted(?:\b|\s)/i.test(title)&&!isMarketing&&!!String(item?.image||'').trim()&&allowedTypes.includes(type)&&knownRelease&&!futureStart;
 }
 function matchesAnimeSearch(item,query){
  const ignored=new Set(['x','the','a','an','and','of','part','season','movie','tv']);
