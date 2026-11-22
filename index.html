@@ -116,7 +116,7 @@
       <section id="profile" class="page">
         <div class="page-intro"><p class="eyebrow">MAKE YOURSELF AT HOME</p><h1>My <em>profile.</em></h1><p>Personalise your little corner. Your profile is saved to your account.</p></div>
         <div class="profile-preview"><div class="profile-banner" id="profileBanner"></div><div class="profile-info"><div class="big-avatar" id="profileAvatar">🌷</div><div><h2 id="profileNameDisplay">Little star</h2><p id="profileBioDisplay">Collecting stories, one episode at a time ♡</p></div></div></div>
-        <div class="settings-card"><h3>Profile details</h3><label>Display name<input class="field" id="profileName" maxlength="24" value="Little star"></label><label>Bio<input class="field" id="profileBio" maxlength="90" value="Collecting stories, one episode at a time ♡"></label>
+        <div class="settings-card"><h3>Profile details</h3><label>Display name<input class="field" id="profileName" maxlength="24" value="Little star"></label><label>Unique username<input class="field" id="profileUsername" maxlength="20" minlength="3" pattern="[A-Za-z0-9_]{3,20}" autocomplete="username" placeholder="e.g. yasmii_07"><small class="privacy-foot">Your username is unique and can be used to find you when chatting arrives. Use 3–20 letters, numbers or underscores. You can change it later if the new one is available.</small></label><label>Bio<input class="field" id="profileBio" maxlength="90" value="Collecting stories, one episode at a time ♡"></label>
         <label>Your profile picture<input class="field" id="avatarUpload" type="file" accept="image/*"></label>
         <label class="camera-label"><input id="cameraUpload" type="file" accept="image/*" capture="user"><span class="camera-button">Use camera</span><small>but seriously which gorgeous being uses camera for a pfp?</small></label>
         <label>Your own banner<input class="field" id="bannerUpload" type="file" accept="image/*"></label>
@@ -191,7 +191,7 @@
   </dialog>
   <div id="toast" class="toast" role="status"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="auth.js?v=20261122-2"></script>
-  <script src="app.js"></script>
+  <script src="auth.js?v=20261122-3"></script>
+  <script src="app.js?v=20261122-usernames-1"></script>
 </body>
 </html>
