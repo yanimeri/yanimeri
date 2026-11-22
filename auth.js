@@ -90,16 +90,4 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (e) { authMessage(e.message || "Something went wrong. Please try again.", true); }
     finally { submit.disabled = false; }
   });
-  document.getElementById("googleLogin").addEventListener("click", async () => {
-    const { error } = await yanimeriSupabase.auth.signInWithOAuth({
-      provider: "google", options: { redirectTo: window.location.origin + window.location.pathname }
-    });
-    if (error) authMessage(error.message, true);
-  });
-  document.getElementById("appleLogin").addEventListener("click", async () => {
-    const { error } = await yanimeriSupabase.auth.signInWithOAuth({
-      provider: "apple", options: { redirectTo: window.location.origin + window.location.pathname }
-    });
-    if (error) authMessage(error.message, true);
-  });
 });
