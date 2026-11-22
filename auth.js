@@ -1,5 +1,5 @@
 // Yanimeri authentication and per-user cloud data.
-const SUPABASE_URL = "https://bopigakytjzxyhblkyu.supabase.co";
+const SUPABASE_URL = "https://bopigakyjtzjxyhblkyu.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_a1EkQIECCJPQFMKYTTWaxw_--2kidED";
 const yanimeriSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 window.yanimeriSupabase = yanimeriSupabase;
