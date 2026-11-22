@@ -92,7 +92,7 @@ function normalizeKitsu(x,included=[]){
 }
 function normalizeAniList(x){
  const t=x.title||{},title=t.english||t.romaji||t.native||'Untitled anime';
- const formats={TV:'TV',TV_SHORT:'TV',MOVIE:'Movie',OVA:'OVA',ONA:'ONA',SPECIAL:'Special'};
+ const formats={TV:'tv',TV_SHORT:'tv',MOVIE:'movie',OVA:'ova',ONA:'ona',SPECIAL:'special'};
  return {id:'anilist'+x.id,title,altTitles:[t.english,t.romaji,t.native,...(x.synonyms||[])].filter(Boolean),genres:(x.genres||[]).join(' · ')||'Anime',image:x.coverImage?.extraLarge||x.coverImage?.large||'',episode:0,status:'Plan to watch',rating:'',year:x.startDate?.year||'',emoji:'✿',mediaType:formats[x.format]||String(x.format||''),releaseStatus:x.status==='FINISHED'?'finished':x.status==='RELEASING'?'current':'',startDate:x.startDate?.year&&x.startDate?.month&&x.startDate?.day?String(x.startDate.year).padStart(4,'0')+'-'+String(x.startDate.month).padStart(2,'0')+'-'+String(x.startDate.day).padStart(2,'0'):''};
 }
 async function fetchAniList({page=1,search='',genre=''}={}){
