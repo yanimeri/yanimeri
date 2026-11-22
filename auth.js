@@ -26,7 +26,7 @@ function friendlyAuthError(error, mode) {
   }
   if (/invalid login credentials|invalid.*(password|credentials)|incorrect password/.test(message)) {
     return mode === "signin"
-      ? "Oops! That password doesn't seem right. Try again ♡"
+      ? "Oops! Those login details don't seem right. Check your email/username and password. ♡"
       : "We couldn't create your account. Please check your details and try again.";
   }
   if (/already registered|already exists|user already/.test(message)) {
@@ -145,8 +145,12 @@ document.addEventListener("DOMContentLoaded", () => {
           if (error) throw error;
         } else {
           const { data, error } = await yanimeriSupabase.functions.invoke("login-with-username", { body: { username: identifier.replace(/^@/, "").toLowerCase(), password } });
-          if (error) throw error;
-          if (!data?.access_token || !data?.refresh_token) throw new Error("Could not log in. Check your username and password.");
+          if (error) {
+            const status = error.context?.status;
+            if (status === 400 || status === 401) throw new Error("Invalid login credentials");
+            throw error;
+          }
+          if (!data?.access_token || !data?.refresh_token) throw new Error("Invalid login credentials");
           const { error: sessionError } = await yanimeriSupabase.auth.setSession({ access_token: data.access_token, refresh_token: data.refresh_token });
           if (sessionError) throw sessionError;
         }
