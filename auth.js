@@ -127,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
     authMessage(mode === "signin" ? "Logging you in…" : "Creating your account…");
     try {
       if (mode === "signup") {
-        if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) throw new Error("Please enter a valid email address.");
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Please enter a valid email address.");
         if (password.length < 6) throw new Error("Your password needs to be at least 6 characters.");
         if (!name) throw new Error("Please enter a display name.");
         if (!/^[a-z0-9_]{3,20}$/.test(username)) throw new Error("Username must be 3–20 characters: letters, numbers or underscores.");
