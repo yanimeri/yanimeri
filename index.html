@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yanimeri — your anime corner</title>
+  <meta name="theme-color" content="#c92f43">
+  <link rel="icon" href="https://i.pinimg.com/474x/38/15/c2/3815c25d6984e98f50e6d49418188e3c.jpg">
+  <link rel="preconnect" href="https://api.jikan.moe">
+  <link rel="preconnect" href="https://cdn.myanimelist.net">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" data-page="home"><span class="brand-mark"><img src="https://i.pinimg.com/474x/38/15/c2/3815c25d6984e98f50e6d49418188e3c.jpg" alt=""></span><span>yanimeri<small>your little anime corner</small></span></a>
+      <div class="side-label">MENU</div>
+      <button class="nav active" data-page="home">⌂ <span>Home</span></button>
+      <button class="nav" data-page="discover">✧ <span>Discover</span></button>
+      <button class="nav" data-page="library">▤ <span>My library</span></button>
+      <button class="nav" data-page="diary">♡ <span>My diary</span></button>
+      <button class="nav" data-page="profile">☻ <span>My profile</span></button>
+      <button class="nav" data-page="ideas">✎ <span>Suggestions</span></button>
+      <button class="nav" data-page="chat">♡ <span>Chatting</span></button>
+      <div class="side-bottom">
+        <div class="mini-profile"><div class="avatar">🌷</div><div><b>Little star</b><small>your space, your pace</small></div></div>
+        <p class="privacy-note">🔒 Your diary is private on this device.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="mobile-brand">ゆ yanimeri</div>
+        <div class="search-wrap"><span>⌕</span><input id="globalSearch" placeholder="Search anime in your library..." aria-label="Search anime"></div>
+        <button class="soft-btn" id="addAnimeTop">＋ Add anime</button>
+      </header>
+
+      <section id="home" class="page active">
+        
+<div class="welcome-panel">
+  <div class="welcome-copy">
+    <p class="eyebrow">YOUR LITTLE ANIME CORNER ✿</p>
+    <h1 id="welcomeTitle">Welcome to <em>Yanimeri.</em></h1>
+    <p class="hero-copy" id="welcomeCopy">I hope you enjoy your time here! I'm here if you need a little help finding your way.</p>
+    <button class="primary-btn" data-goto="discover">Explore anime <span>↗</span></button>
+  </div>
+  <div class="home-companion" id="homeCompanion">
+    <div class="companion-sparkle">✧</div>
+    <img id="homeCompanionImage" src="https://i.pinimg.com/474x/76/a8/0e/76a80ebf4cd62c4694bf67984064c6ca.jpg" alt="Your Yanimeri companion">
+    <div class="speech-bubble" id="companionBubble">I hope you enjoy your time here! ♡</div>
+  </div>
+</div>
+<div class="section-head"><div><p class="eyebrow">A QUICK LOOK</p><h2>Your anime world</h2></div><button class="text-btn" data-goto="library">View library ↗</button></div>
+        <div class="stats-grid">
+          <div class="stat-card"><span class="stat-icon">◷</span><b id="watchingCount">0</b><small>Currently watching</small></div>
+          <div class="stat-card"><span class="stat-icon">✿</span><b id="completedCount">0</b><small>Completed</small></div>
+          <div class="stat-card"><span class="stat-icon">♡</span><b id="plannedCount">0</b><small>Plan to watch</small></div>
+          <div class="stat-card"><span class="stat-icon">✧</span><b id="totalCount">0</b><small>In your collection</small></div>
+        </div>
+        <div class="section-head"><div><p class="eyebrow">PICK UP WHERE YOU LEFT OFF</p><h2>Currently watching</h2></div></div>
+        <div id="continueGrid" class="anime-grid compact-grid"></div>
+        <div class="empty-hint" id="homeEmpty">Your watchlist is waiting for its first story. <button class="text-btn" data-goto="discover">Find an anime →</button></div>
+      </section>
+
+      <section id="discover" class="page">
+        <div class="page-intro"><p class="eyebrow">FIND YOUR NEXT FAVOURITE</p><h1>Little discoveries <em>await.</em></h1><p>Search a huge anime catalogue, explore covers, and add anything that catches your eye.</p></div>
+        <div class="filter-row"><input id="discoverSearch" class="field" placeholder="Search anime titles..."><select id="genreFilter" class="field"><option value="">All genres</option><option>Romance</option><option>Fantasy</option><option>Slice of Life</option><option>Mystery</option><option>Drama</option><option>Comedy</option><option>Adventure</option><option>Action</option><option>Horror</option><option>Sports</option></select></div>
+        <p class="catalogue-note" id="catalogueStatus">Loading anime covers…</p>
+        <div id="discoverGrid" class="anime-grid"></div>
+        <div class="load-more-wrap"><button class="soft-btn" id="loadMoreAnime">Load more anime ↓</button></div>
+      </section>
+
+      <section id="library" class="page">
+        <div class="page-intro"><p class="eyebrow">ALL YOUR STORIES, IN ONE PLACE</p><h1>My <em>library.</em></h1><p>A home for every anime you've watched or want to watch.</p></div>
+        <div class="tabs" id="libraryTabs"><button class="tab active" data-status="All">All <span id="tabAll">0</span></button><button class="tab" data-status="Watching">Watching</button><button class="tab" data-status="Completed">Completed</button><button class="tab" data-status="Plan to watch">Plan to watch</button><button class="tab" data-status="On hold">On hold</button></div>
+        <div id="libraryGrid" class="anime-grid"></div>
+        <div id="libraryEmpty" class="empty-hint">Nothing here just yet. Add an anime from Discover ✿</div>
+      </section>
+
+      <section id="diary" class="page">
+        <div class="page-intro"><p class="eyebrow">A SPACE JUST FOR YOU</p><h1>My little <em>diary.</em></h1><p>Write down thoughts, reactions, and memories. Entries stay private on this device.</p></div>
+        <div class="diary-compose"><label for="diaryText">Today's thought</label><textarea id="diaryText" placeholder="That scene made me feel..."></textarea><div class="compose-bottom"><span>🔒 Private by default</span><button class="primary-btn" id="saveDiary">Save entry ♡</button></div></div>
+        <div class="section-head"><div><p class="eyebrow">YOUR NOTES</p><h2>Little memories</h2></div></div>
+        <div id="diaryEntries" class="diary-entries"></div>
+      </section>
+
+      <section id="profile" class="page">
+        <div class="page-intro"><p class="eyebrow">MAKE YOURSELF AT HOME</p><h1>My <em>profile.</em></h1><p>Personalise your little corner. This demo stores changes only in this browser.</p></div>
+        <div class="profile-preview"><div class="profile-banner" id="profileBanner"></div><div class="profile-info"><div class="big-avatar" id="profileAvatar">🌷</div><div><h2 id="profileNameDisplay">Little star</h2><p id="profileBioDisplay">Collecting stories, one episode at a time ♡</p></div></div></div>
+        <div class="settings-card"><h3>Profile details</h3><label>Display name<input class="field" id="profileName" maxlength="24" value="Little star"></label><label>Bio<input class="field" id="profileBio" maxlength="90" value="Collecting stories, one episode at a time ♡"></label>
+        <label>Your profile picture<input class="field" id="avatarUpload" type="file" accept="image/*"></label>
+        <label class="camera-label"><input id="cameraUpload" type="file" accept="image/*" capture="user"><span class="camera-button">Use camera</span><small>but seriously which gorgeous being uses camera for a pfp?</small></label>
+        <label>Your own banner<input class="field" id="bannerUpload" type="file" accept="image/*"></label>
+        <div class="banner-editor"><b>Adjust your banner picture</b><p>Move the picture and zoom until the preview looks right.</p>
+          <label>Move left / right <input id="bannerX" type="range" min="0" max="100" value="50"></label>
+          <label>Move up / down <input id="bannerY" type="range" min="0" max="100" value="50"></label>
+          <label>Zoom in / out <input id="bannerZoom" type="range" min="100" max="250" value="100"></label>
+          <div class="banner-preview" id="bannerCropPreview"></div></div>
+        <label>Or pick a tiny decoration<div class="avatar-choices" id="avatarChoices"><button class="chosen">🌷</button><button>🐈</button><button>🌙</button><button>🧸</button><button>🍓</button><button>🦢</button></div></label>
+        <h3 class="settings-subhead">Make Yanimeri yours</h3>
+        <label>Accent colour <input class="color-field" id="accentColor" type="color" value="#c92f43"></label>
+        <label>Soft background <input class="color-field" id="backgroundColor" type="color" value="#fffafa"></label>
+        <label>Font style<select class="field" id="fontChoice"><option value="DM Sans">Clean — DM Sans</option><option value="Georgia">Classic — Georgia</option><option value="Trebuchet MS">Rounded — Trebuchet</option><option value="Arial">Simple — Arial</option><option value="Courier New">Typewriter — Courier</option></select></label>
+        <button class="primary-btn" id="saveProfile">Save my little corner ♡</button></div>
+        <p class="privacy-foot">Your uploaded images and preferences are stored only in this browser on this device. Choose images you have permission to use.</p>
+      </section>
+ 
+      <section id="ideas" class="page">
+        <div class="page-intro"><p class="eyebrow">HELP SHAPE YANIMERI</p><h1>Your ideas <em>matter.</em></h1><p>Have a feature in mind? Tell us what you'd love to see next.</p></div>
+        <div class="settings-card"><h3>Recommend a feature</h3><label>Your idea<input class="field" id="ideaTitle" maxlength="90" placeholder="e.g. A seasonal anime calendar"></label><label>Tell me more<textarea class="field" id="ideaDetails" rows="5" maxlength="700" placeholder="What should it do? Why would you like it?"></textarea></label><button class="primary-btn" id="sendIdea">Send recommendation ♡</button><p class="privacy-foot">Prototype note: recommendations are saved in this browser only. They are not sent to the website owner until Yanimeri has a real backend.</p></div>
+        <div class="section-head"><div><p class="eyebrow">YOUR NOTES</p><h2>Ideas you've shared</h2></div></div><div id="ideaList" class="diary-entries"></div>
+      </section>
+      <section id="chat" class="page">
+        <div class="page-intro"><p class="eyebrow">A LITTLE PATIENCE ♡</p><h1>Chatting <em>corner.</em></h1></div>
+        <div class="coming-soon-card"><div class="coming-flower">✿</div><h2>chatting option coming soon when we get more users!</h2><p>give your opinion and recommendation!</p><button class="primary-btn" data-goto="ideas">Share your idea ♡</button></div>
+      </section>
+    </main>
+  </div>
+
+
+<div class="onboarding-overlay" id="onboardingOverlay" hidden>
+ <section class="onboarding-card" aria-live="polite">
+  <div id="accountStep">
+   <p class="eyebrow">WELCOME TO YANIMERI ♡</p><h1>Let's make this <em>your space.</em></h1>
+   <p>Create your demo profile to get started. Real Google/email sign-in needs a secure online backend before launch.</p>
+   <label>Your name<input class="field" id="newAccountName" maxlength="24" placeholder="What should we call you?"></label>
+   <label>Email address<input class="field" id="newAccountEmail" type="email" placeholder="you@example.com"></label>
+   <button class="primary-btn full-btn" id="continueToCompanions">Continue ♡</button>
+   <small>This offline prototype keeps this demo profile on this device only. It does not create a real online account.</small>
+  </div>
+  <div id="companionStep" hidden>
+   <p class="eyebrow">CHOOSE YOUR LITTLE GUIDE ✿</p><h1>Pick a <em>companion.</em></h1>
+   <p>They'll welcome you on your home page and help you find your way around Yanimeri.</p>
+   <div class="companion-options" id="companionOptions"></div>
+   <button class="primary-btn full-btn" id="finishOnboarding" disabled>Choose my companion ♡</button>
+  </div>
+ </section>
+</div>
+<div class="companion-helper" id="companionHelper" hidden>
+ <button class="helper-character" id="helperCharacter" aria-label="Ask your companion for help"><img id="helperImage" alt=""></button>
+ <div class="helper-popover" id="helperPopover" hidden>
+  <button class="helper-close" id="helperClose" aria-label="Close">×</button><b id="helperName">Your companion</b>
+  <p id="helperText">Need a hand? Choose a page from the menu!</p>
+  <div class="helper-actions">
+   <button data-help-page="discover">Find anime</button><button data-help-page="library">My library</button>
+   <button data-help-page="diary">My diary</button><button data-help-page="profile">My profile</button>
+  </div>
+ </div>
+</div>
+
+  <dialog id="animeDialog">
+    <form method="dialog" class="dialog-card" id="animeForm">
+      <button class="close-btn" value="cancel" aria-label="Close">×</button>
+      <p class="eyebrow">ADD TO YOUR COLLECTION</p><h2 id="dialogTitle">Add an anime</h2>
+      <label>Anime title<input id="animeTitle" class="field" required maxlength="70" placeholder="e.g. Frieren: Beyond Journey's End"></label>
+      <label>Genres<input id="animeGenres" class="field" maxlength="80" placeholder="Fantasy, Adventure"></label>
+      <label>Status<select id="animeStatus" class="field"><option>Watching</option><option>Completed</option><option>Plan to watch</option><option>On hold</option></select></label>
+      <label>Current episode<input id="animeEpisode" class="field" type="number" min="0" max="9999" value="0"></label>
+      <label>Your rating (optional)<select id="animeRating" class="field"><option value="">Not rated</option><option value="5">★★★★★ — 5</option><option value="4">★★★★☆ — 4</option><option value="3">★★★☆☆ — 3</option><option value="2">★★☆☆☆ — 2</option><option value="1">★☆☆☆☆ — 1</option></select></label>
+      <button class="primary-btn full-btn" id="submitAnime" value="default">Add to library ♡</button>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
