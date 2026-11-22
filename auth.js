@@ -59,6 +59,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const nameWrap = document.getElementById("authNameWrap");
   const usernameWrap = document.getElementById("authUsernameWrap");
   const usernameInput = document.getElementById("authUsername");
+  const identifierLabel = document.getElementById("authIdentifierLabel");
+  const identifierInput = document.getElementById("authEmail");
   if (toggle) toggle.addEventListener("click", () => {
     mode = mode === "signin" ? "signup" : "signin";
     title.textContent = mode === "signin" ? "Welcome back ♡" : "Create your account ♡";
@@ -66,6 +68,9 @@ document.addEventListener("DOMContentLoaded", () => {
     toggle.textContent = mode === "signin" ? "New here? Create an account" : "Already have an account? Log in";
     nameWrap.hidden = mode === "signin";
     usernameWrap.hidden = mode === "signin";
+    identifierLabel.firstChild.textContent = mode === "signin" ? "Email or username" : "Email address";
+    identifierInput.placeholder = mode === "signin" ? "you@example.com or your_username" : "you@example.com";
+    identifierInput.autocomplete = mode === "signin" ? "username" : "email";
     document.getElementById("authName").required = mode === "signup";
     usernameInput.required = mode === "signup";
     document.getElementById("authPassword").autocomplete = mode === "signin" ? "current-password" : "new-password";
