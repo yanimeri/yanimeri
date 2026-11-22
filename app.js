@@ -96,7 +96,10 @@ function isUsableAnime(item){
  const futureStart=!!item?.startDate&&item.startDate>today;
  const releasedStatus=['finished','current','finished airing','currently airing'];
  const knownRelease=release?releasedStatus.includes(release):!!item?.startDate&&!futureStart;
- return !!title&&!/^deleted(?:\b|\s)/i.test(title)&&!!String(item?.image||'').trim()&&allowedTypes.includes(type)&&knownRelease&&!futureStart;
+ // Brand campaigns, commercials and other marketing tie-ins are not watchable anime entries.
+ const marketingPattern=/\b(campaign|commercial|advertisement|advertising|promotional|promotion|collaboration|collab|tie[ -]?in|brand[ -]?project)\b/i;
+ const isMarketing=marketingPattern.test(title);
+ return !!title&&!/^deleted(?:\b|\s)/i.test(title)&&!isMarketing&&!!String(item?.image||'').trim()&&allowedTypes.includes(type)&&knownRelease&&!futureStart;
 }
 function matchesAnimeSearch(item,query){
  const ignored=new Set(['x','the','a','an','and','of','part','season','movie','tv']);
