@@ -74,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const identifier = document.getElementById("authEmail").value.trim();
+    const email = identifier;
     const password = document.getElementById("authPassword").value;
     const name = document.getElementById("authName").value.trim();
     const username = usernameInput.value.trim().replace(/^@/,"").toLowerCase();
@@ -81,6 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
     authMessage(mode === "signin" ? "Logging you in…" : "Creating your account…");
     try {
       if (mode === "signup") {
+        if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) throw new Error("Please enter a valid email address.");
         if (!name) throw new Error("Please enter a display name.");
         if (!/^[a-z0-9_]{3,20}$/.test(username)) throw new Error("Username must be 3–20 characters: letters, numbers or underscores.");
         const { data, error } = await yanimeriSupabase.auth.signUp({
