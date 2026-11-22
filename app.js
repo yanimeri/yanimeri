@@ -89,7 +89,7 @@ function normalizeKitsu(x){
 }
 function isUsableAnime(item){
  const title=String(item?.title||'').trim();
- return !!title&&!/^deleted(?:\\b|\\s)/i.test(title)&&!!String(item?.image||'').trim();
+ return !!title&&!/^deleted(?:\b|\s)/i.test(title)&&!!String(item?.image||'').trim();
 }
 async function fetchWithRetry(url,attempts=3){
  let lastError;
@@ -209,6 +209,11 @@ async function loadAnime(reset=false){
      const result=await fetchWithRetry(kitsuUrl,1);
      mapped=(result.data||[]).map(normalizeKitsu).filter(isUsableAnime);
      hasNext=!!result.links?.next;
+     if(!mapped.length){
+      const fallback=await fetchWithRetry(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(requestedQuery)}&page=${apiPage}&limit=25&sfw=true`,1);
+      mapped=(fallback.data||[]).map(normalizeJikan).filter(isUsableAnime);
+      hasNext=!!fallback.pagination?.has_next_page;
+     }
     }catch(kitsuError){
      const jikanUrl=`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(requestedQuery)}&page=${apiPage}&limit=25&sfw=true`;
      const result=await fetchWithRetry(jikanUrl,1);
