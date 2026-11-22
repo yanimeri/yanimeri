@@ -245,7 +245,7 @@ async function loadAnime(reset=false){
     }
     hasNext=kitsuHasNext||jikanHasNext;
     if(!mapped.length)throw new Error('No anime results returned');
-   }lse{
+   }else{
     const jikanUrl=`https://api.jikan.moe/v4/top/anime?page=${apiPage}&limit=25&filter=bypopularity`;
     try{
      const data=await fetchWithRetry(jikanUrl,1);
