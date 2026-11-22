@@ -167,6 +167,7 @@ async function loadAnime(reset=false){
    }
    if(requestId!==animeRequestId)return;
    catalogue=mapped;
+   apiPage=2;
    renderDiscover();
    status.textContent=`${catalogue.length} anime loaded · finding romance, slice of life and more…`;
    more.textContent='Loading more genres…';
