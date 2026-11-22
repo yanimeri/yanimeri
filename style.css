@@ -73,3 +73,6 @@ body{background:var(--page-bg);font-family:var(--user-font);color:#44363a}
 .poster-img{width:100%;height:100%;object-fit:cover;display:block;background:#f5edf4}
 .poster-fallback{width:100%;height:100%;display:grid;place-items:center;padding:12px;text-align:center;font:600 11px 'DM Sans',sans-serif;color:#887b91;background:linear-gradient(145deg,#f4edf7,#faeef0)}
 .poster-fallback[style*="display:none"]{display:none!important}
+
+/* User-selectable font colour */
+body,.field{color:var(--font-color,#44363a)}
