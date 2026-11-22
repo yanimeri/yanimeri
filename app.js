@@ -106,7 +106,7 @@ function matchesSearchIntent(item,query){
  const titles=[item?.title,...(item?.altTitles||[])].filter(Boolean).join(' ').toLowerCase().replace(/[×✕]/g,'x').replace(/[^a-z0-9]+/g,' ');
  if(normalized==='spy'||normalized==='spy family'||normalized==='spy x family'){
   // Keep the Spy x Family franchise, but not unrelated titles or crossovers that merely contain “spy”.
-  return titles.includes('spy x family')&&!/\\b(vs|versus|crossover)\\b/i.test(String(item?.title||''));
+  return titles.includes('spy x family')&&!/\b(vs|versus|crossover)\b/i.test(String(item?.title||''));
  }
  return true;
 }
