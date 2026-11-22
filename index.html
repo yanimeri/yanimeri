@@ -9,9 +9,39 @@
   <link rel="preconnect" href="https://api.jikan.moe">
   <link rel="preconnect" href="https://cdn.myanimelist.net">
   <link rel="stylesheet" href="style.css">
-</head>
+
+<style>
+.auth-overlay{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:22px;background:linear-gradient(135deg,#fff6f6,#f9e9eb)}
+.auth-overlay[hidden]{display:none!important}.auth-card{width:min(100%,440px);padding:38px;border-radius:25px;background:#fff;box-shadow:0 18px 70px #7e29301c;color:#382b2d}
+.auth-card h1{font-size:clamp(2rem,6vw,2.65rem);line-height:1.12;margin:10px 0}.auth-card h1 em{color:#c92f43}.auth-subtitle{color:#79696b;line-height:1.6;margin-bottom:24px}
+.auth-card label{display:block;font-size:.9rem;font-weight:600;margin:14px 0}.auth-card .field{display:block;width:100%;margin-top:7px}
+.auth-card .full-btn{width:100%;margin-top:12px}.auth-provider{width:100%;padding:12px;border:1px solid #eadcde;border-radius:12px;background:white;margin-top:10px;font:inherit;cursor:pointer;color:#382b2d}
+.auth-toggle{display:block;margin:18px auto 0;border:0;background:none;color:#b52c40;text-decoration:underline;cursor:pointer;font:inherit}
+.auth-message{min-height:22px;margin:12px 0 0;color:#a32b3d;font-size:.9rem}.auth-message[data-error="false"]{color:#477d58}
+.auth-footnote{display:block;text-align:center;color:#8a7a7c;margin-top:14px}
+</style></head>
 <body>
-  <div class="app-shell">
+
+<div id="authOverlay" class="auth-overlay" hidden>
+ <section class="auth-card">
+  <p class="eyebrow">WELCOME TO YANIMERI ♡</p>
+  <h1 id="authTitle">Welcome back <em>to your corner.</em></h1>
+  <p class="auth-subtitle">Log in to keep your anime world saved wherever you go.</p>
+  <form id="authForm">
+   <label id="authNameWrap" hidden>Your name<input class="field" id="authName" maxlength="24" placeholder="What should we call you?"></label>
+   <label>Email address<input class="field" id="authEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+   <label>Password<input class="field" id="authPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"></label>
+   <button class="primary-btn full-btn" id="authSubmit" type="submit">Log in</button>
+  </form>
+  <button class="auth-provider" id="googleLogin" type="button">Continue with Google</button>
+  <button class="auth-provider" id="appleLogin" type="button">Continue with Apple</button>
+  <button class="auth-toggle" id="authToggle" type="button">New here? Create an account</button>
+  <p id="authMessage" class="auth-message" role="status"></p>
+  <small class="auth-footnote">Your library and diary are private to your account.</small>
+ </section>
+</div>
+
+  <div class="app-shell" hidden>
     <aside class="sidebar">
       <a class="brand" href="#" data-page="home"><span class="brand-mark"><img src="https://i.pinimg.com/474x/38/15/c2/3815c25d6984e98f50e6d49418188e3c.jpg" alt=""></span><span>yanimeri<small>your little anime corner</small></span></a>
       <div class="side-label">MENU</div>
@@ -33,6 +63,7 @@
         <div class="mobile-brand">ゆ yanimeri</div>
         <div class="search-wrap"><span>⌕</span><input id="globalSearch" placeholder="Search anime in your library..." aria-label="Search anime"></div>
         <button class="soft-btn" id="addAnimeTop">＋ Add anime</button>
+        <button class="soft-btn" id="signOutButton" onclick="window.yanimeriSupabase.auth.signOut().then(()=>window.location.reload())">Log out</button>
       </header>
 
       <section id="home" class="page active">
@@ -78,14 +109,14 @@
       </section>
 
       <section id="diary" class="page">
-        <div class="page-intro"><p class="eyebrow">A SPACE JUST FOR YOU</p><h1>My little <em>diary.</em></h1><p>Write down thoughts, reactions, and memories. Entries stay private on this device.</p></div>
-        <div class="diary-compose"><label for="diaryText">Today's thought</label><textarea id="diaryText" placeholder="That scene made me feel..."></textarea><div class="compose-bottom"><span>🔒 Private by default</span><button class="primary-btn" id="saveDiary">Save entry ♡</button></div></div>
+        <div class="page-intro"><p class="eyebrow">A SPACE JUST FOR YOU</p><h1>My little <em>diary.</em></h1><p>Write down thoughts, reactions, and memories. Entries stay private to your account.</p></div>
+        <div class="diary-compose"><label for="diaryText">Today's thought</label><textarea id="diaryText" placeholder="That scene made me feel..."></textarea><div class="compose-bottom"><span>🔒 Private to your account</span><button class="primary-btn" id="saveDiary">Save entry ♡</button></div></div>
         <div class="section-head"><div><p class="eyebrow">YOUR NOTES</p><h2>Little memories</h2></div></div>
         <div id="diaryEntries" class="diary-entries"></div>
       </section>
 
       <section id="profile" class="page">
-        <div class="page-intro"><p class="eyebrow">MAKE YOURSELF AT HOME</p><h1>My <em>profile.</em></h1><p>Personalise your little corner. This demo stores changes only in this browser.</p></div>
+        <div class="page-intro"><p class="eyebrow">MAKE YOURSELF AT HOME</p><h1>My <em>profile.</em></h1><p>Personalise your little corner. Your profile is saved to your account.</p></div>
         <div class="profile-preview"><div class="profile-banner" id="profileBanner"></div><div class="profile-info"><div class="big-avatar" id="profileAvatar">🌷</div><div><h2 id="profileNameDisplay">Little star</h2><p id="profileBioDisplay">Collecting stories, one episode at a time ♡</p></div></div></div>
         <div class="settings-card"><h3>Profile details</h3><label>Display name<input class="field" id="profileName" maxlength="24" value="Little star"></label><label>Bio<input class="field" id="profileBio" maxlength="90" value="Collecting stories, one episode at a time ♡"></label>
         <label>Your profile picture<input class="field" id="avatarUpload" type="file" accept="image/*"></label>
@@ -102,7 +133,7 @@
         <label>Soft background <input class="color-field" id="backgroundColor" type="color" value="#fffafa"></label>
         <label>Font style<select class="field" id="fontChoice"><option value="DM Sans">Clean — DM Sans</option><option value="Georgia">Classic — Georgia</option><option value="Trebuchet MS">Rounded — Trebuchet</option><option value="Arial">Simple — Arial</option><option value="Courier New">Typewriter — Courier</option></select></label>
         <button class="primary-btn" id="saveProfile">Save my little corner ♡</button></div>
-        <p class="privacy-foot">Your uploaded images and preferences are stored only in this browser on this device. Choose images you have permission to use.</p>
+        <p class="privacy-foot">Your preferences are saved to your account. Choose images you have permission to use. Choose images you have permission to use.</p>
       </section>
  
       <section id="ideas" class="page">
@@ -122,11 +153,11 @@
  <section class="onboarding-card" aria-live="polite">
   <div id="accountStep">
    <p class="eyebrow">WELCOME TO YANIMERI ♡</p><h1>Let's make this <em>your space.</em></h1>
-   <p>Create your demo profile to get started. Real Google/email sign-in needs a secure online backend before launch.</p>
+   <p>Your account is ready. Choose a companion to get started.</p>
    <label>Your name<input class="field" id="newAccountName" maxlength="24" placeholder="What should we call you?"></label>
    <label>Email address<input class="field" id="newAccountEmail" type="email" placeholder="you@example.com"></label>
    <button class="primary-btn full-btn" id="continueToCompanions">Continue ♡</button>
-   <small>This offline prototype keeps this demo profile on this device only. It does not create a real online account.</small>
+   <small></small>
   </div>
   <div id="companionStep" hidden>
    <p class="eyebrow">CHOOSE YOUR LITTLE GUIDE ✿</p><h1>Pick a <em>companion.</em></h1>
@@ -161,6 +192,8 @@
     </form>
   </dialog>
   <div id="toast" class="toast" role="status"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
