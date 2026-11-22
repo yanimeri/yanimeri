@@ -77,3 +77,8 @@ body{background:var(--page-bg);font-family:var(--user-font);color:#44363a}
 
 /* User-selectable font colour */
 body,.field{color:var(--font-color,#44363a)}
+
+
+/* User-customisable sidebar colour */
+.sidebar{background:var(--sidebar-color,#fffafa)}
+.nav.active,.nav:hover{background:color-mix(in srgb,var(--sidebar-color,#fffafa) 78%,var(--accent) 22%)}
