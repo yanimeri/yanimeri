@@ -96,11 +96,11 @@ function isUsableAnime(item){
  const futureStart=!!item?.startDate&&item.startDate>today;
  const releasedStatus=['finished','current','finished airing','currently airing'];
  const knownRelease=release?releasedStatus.includes(release):!!item?.startDate&&!futureStart;
- return !!title&&!/^deleted(?:\\b|\\s)/i.test(title)&&!!String(item?.image||'').trim()&&allowedTypes.includes(type)&&knownRelease&&!futureStart;
+ return !!title&&!/^deleted(?:\b|\s)/i.test(title)&&!!String(item?.image||'').trim()&&allowedTypes.includes(type)&&knownRelease&&!futureStart;
 }
 function matchesAnimeSearch(item,query){
  const ignored=new Set(['x','the','a','an','and','of','part','season','movie','tv']);
- const words=String(query||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().split(/\\s+/).filter(w=>w.length>1&&!ignored.has(w));
+ const words=String(query||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().split(/\s+/).filter(w=>w.length>1&&!ignored.has(w));
  const title=String(item?.title||'').toLowerCase();
  return words.length===0||words.every(word=>title.includes(word));
 }
