@@ -119,7 +119,7 @@ const diverseAnimeGenres = [
  {id:10,name:'Fantasy'},{id:8,name:'Drama'},{id:7,name:'Mystery'},
  {id:30,name:'Sports'},{id:2,name:'Adventure'},{id:24,name:'Sci-Fi'},
  {id:37,name:'Supernatural'},{id:14,name:'Horror'},{id:26,name:'Girls Love'},
- {id:28,name:'Boys Love'},{id: gourmet,name:'Gourmet'}
+ {id:28,name:'Boys Love'}
 ];
 async function loadDiverseAnime(){
  const collected=new Map();
