@@ -90,6 +90,26 @@ function normalizeKitsu(x,included=[]){
  const genreNames=genreIds.map(g=>includedGenres.get(String(g.id))).filter(Boolean);
  return {id:'kitsu'+x.id,title:a.titles?.en||a.titles?.en_jp||a.canonicalTitle||'Untitled anime',genres:genreNames.join(' · ')||'Anime',image:p.large||p.original||p.medium||'',episode:0,status:'Plan to watch',rating:'',year:a.startDate?Number(a.startDate.slice(0,4)):'',emoji:'✿',mediaType:String(a.subtype||''),releaseStatus:String(a.status||''),startDate:a.startDate||''};
 }
+function normalizeAniList(x){
+ const t=x.title||{},title=t.english||t.romaji||t.native||'Untitled anime';
+ const formats={TV:'TV',TV_SHORT:'TV',MOVIE:'Movie',OVA:'OVA',ONA:'ONA',SPECIAL:'Special'};
+ return {id:'anilist'+x.id,title,altTitles:[t.english,t.romaji,t.native,...(x.synonyms||[])].filter(Boolean),genres:(x.genres||[]).join(' · ')||'Anime',image:x.coverImage?.extraLarge||x.coverImage?.large||'',episode:0,status:'Plan to watch',rating:'',year:x.startDate?.year||'',emoji:'✿',mediaType:formats[x.format]||String(x.format||''),releaseStatus:x.status==='FINISHED'?'finished':x.status==='RELEASING'?'current':'',startDate:x.startDate?.year&&x.startDate?.month&&x.startDate?.day?String(x.startDate.year).padStart(4,'0')+'-'+String(x.startDate.month).padStart(2,'0')+'-'+String(x.startDate.day).padStart(2,'0'):''};
+}
+async function fetchAniList({page=1,search='',genre=''}={}){
+ const query=`query ($page:Int,$search:String,$genre:String) {
+  Page(page:$page,perPage:50) {
+   pageInfo { hasNextPage }
+   media(type:ANIME,search:$search,genre:$genre,format_in:[TV,TV_SHORT,MOVIE,OVA,ONA,SPECIAL],status_in:[FINISHED,RELEASING],isAdult:false,sort:POPULARITY_DESC) {
+    id title { english romaji native } synonyms format status startDate { year month day } genres coverImage { large extraLarge }
+   }
+  }
+ }`;
+ const response=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({query,variables:{page,search:search||null,genre:genre||null}})});
+ if(!response.ok)throw new Error('AniList request failed ('+response.status+')');
+ const payload=await response.json();
+ if(payload.errors?.length)throw new Error(payload.errors[0].message||'AniList query failed');
+ return {items:(payload.data?.Page?.media||[]).map(normalizeAniList).filter(isUsableAnime),hasNext:!!payload.data?.Page?.pageInfo?.hasNextPage};
+}
 function isUsableAnime(item){
  const title=String(item?.title||'').trim();
  const allowedTypes=['tv','movie','ova','ona','special'];
@@ -197,87 +217,48 @@ async function loadAnime(reset=false){
  if(reset){apiPage=1;catalogue=[]}
  const status=$('#catalogueStatus'),more=$('#loadMoreAnime');
  const requestedQuery=apiMode==='search'?apiQuery.trim():'';
- status.textContent=apiMode==='search'?'Searching anime titles…':'Loading anime…';
+ const selectedGenre=apiMode==='genre'?apiQuery.trim():'';
+ status.textContent=apiMode==='search'?'Searching anime titles and alternate names…':apiMode==='genre'?'Finding anime in this genre…':'Loading anime…';
  more.disabled=true;
  try{
-  let mapped=[],hasNext=false;
-  if(apiMode==='top'&&apiPage===1){
-   // Load Kitsu's paginated feed first; use one quick Jikan fallback if needed.
-   try{
-    const first=await fetchWithRetry('https://kitsu.io/api/edge/anime?page%5Blimit%5D=20&page%5Boffset%5D=0&sort=-userCount&include=genres',1);
-    mapped=(first.data||[]).map(x=>normalizeKitsu(x,first.included||[])).filter(isUsableAnime);
-   }catch(primaryError){
-    const backup=await fetchWithRetry('https://api.jikan.moe/v4/top/anime?page=1&limit=25&filter=bypopularity',1);
-    mapped=(backup.data||[]).map(normalizeJikan).filter(isUsableAnime);
-   }
-   if(requestId!==animeRequestId)return;
-   catalogue=mapped;
-   apiPage=2;
-   renderDiscover();
-   status.textContent=`${catalogue.length} anime loaded · finding romance, slice of life and more…`;
-   more.textContent='Loading more genres…';
-   // Keep the page usable while the diverse catalogue fills in.
-   more.disabled=true;
-   loadDiverseAnime(requestId);
-   return;
-  }
-  if(apiMode==='search'){
-    // Combine Kitsu and Jikan search results so one database's ranking or missing aliases
-    // cannot hide a season, movie, OVA, ONA or special found by the other.
-    let kitsuHasNext=false,jikanHasNext=false;
-    try{
-     const kitsuUrl=`https://kitsu.io/api/edge/anime?filter%5Btext%5D=${encodeURIComponent(requestedQuery)}&page%5Blimit%5D=20&page%5Boffset%5D=${(apiPage-1)*20}&include=genres`;
-     const result=await fetchWithRetry(kitsuUrl,1);
-     mapped=(result.data||[]).map(x=>normalizeKitsu(x,result.included||[])).filter(isUsableAnime);
-     kitsuHasNext=!!result.links?.next;
-    }catch(kitsuError){
-     console.warn('Kitsu search unavailable; using Jikan:',kitsuError);
-    }
-    try{
-     const jikanUrl=`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(requestedQuery)}&page=${apiPage}&limit=25&sfw=true`;
-     const result=await fetchWithRetry(jikanUrl,1);
-     const extra=(result.data||[]).map(normalizeJikan).filter(isUsableAnime);
-     const seen=new Set(mapped.map(item=>String(item.title).toLowerCase()));
-     mapped=mapped.concat(extra.filter(item=>!seen.has(String(item.title).toLowerCase())));
-     jikanHasNext=!!result.pagination?.has_next_page;
-    }catch(jikanError){
-     console.warn('Jikan search unavailable; keeping Kitsu results:',jikanError);
-    }
-    hasNext=kitsuHasNext||jikanHasNext;
-    if(!mapped.length)throw new Error('No anime results returned');
-   }else{
-    const jikanUrl=`https://api.jikan.moe/v4/top/anime?page=${apiPage}&limit=25&filter=bypopularity`;
-    try{
-     const data=await fetchWithRetry(jikanUrl,1);
-     mapped=(data.data||[]).map(normalizeJikan).filter(isUsableAnime);
-     hasNext=!!data.pagination?.has_next_page;
-    }catch(jikanError){
-     const offset=(apiPage-1)*20;
-     const kitsuUrl=`https://kitsu.io/api/edge/anime?page%5Blimit%5D=20&page%5Boffset%5D=${offset}&sort=-userCount&include=genres`;
-     const backup=await fetchWithRetry(kitsuUrl,1);
-     mapped=(backup.data||[]).map(x=>normalizeKitsu(x,backup.included||[])).filter(isUsableAnime);
-     hasNext=!!backup.links?.next;
-    }
-   }
-   if(requestId!==animeRequestId)return;
-  if(!mapped.length&&apiPage===1)throw new Error('No anime results returned');
-  catalogue=apiPage===1?mapped:catalogue.concat(mapped.filter(x=>!catalogue.some(y=>String(y.id)===String(x.id))));
+  const result=await fetchAniList({page:apiPage,search:requestedQuery,genre:selectedGenre});
+  if(requestId!==animeRequestId)return;
+  const seen=new Set(catalogue.map(x=>String(x.id)));
+  catalogue=catalogue.concat(result.items.filter(x=>!seen.has(String(x.id))));
   renderDiscover();
-  status.textContent=apiMode==='search'
-   ?`${catalogue.length} results for “${requestedQuery}”.`
-   :`${catalogue.length} anime loaded. Keep browsing for more.`;
-  more.textContent='Load more anime ↓';apiPage++;more.disabled=!hasNext;
+  status.textContent=apiMode==='search'?'“'+requestedQuery+'” · '+catalogue.length+' matching anime':apiMode==='genre'?selectedGenre+' · '+catalogue.length+' anime found':catalogue.length+' anime loaded';
+  apiPage++;more.textContent='Load more anime ↓';more.disabled=!result.hasNext;
  }catch(error){
   if(requestId!==animeRequestId)return;
-  console.error('Yanimeri catalogue error:',error);
-  status.textContent='Could not connect to the anime database. Please retry in a moment.';
-  more.disabled=false;more.textContent='Retry loading anime ↻';
-  if(!catalogue.length)$('#discoverGrid').innerHTML='<div class="empty-hint">Anime could not load right now. Please tap Retry.</div>';
+  console.error('AniList catalogue error:',error);
+  status.textContent='AniList is temporarily unavailable. Trying backup anime databases…';
+  try{
+   let fallback=[];
+   if(apiMode==='search'){
+    const data=await fetchWithRetry('https://api.jikan.moe/v4/anime?q='+encodeURIComponent(requestedQuery)+'&page=1&limit=25&sfw=true',1);
+    fallback=(data.data||[]).map(normalizeJikan).filter(isUsableAnime);
+   }else if(apiMode==='genre'){
+    const genreId=diverseAnimeGenres.find(x=>x.name.toLowerCase()===selectedGenre.toLowerCase())?.id;
+    if(genreId){const data=await fetchWithRetry('https://api.jikan.moe/v4/anime?genres='+genreId+'&order_by=popularity&sort=desc&limit=25&sfw=true',1);fallback=(data.data||[]).map(normalizeJikan).filter(isUsableAnime)}
+   }else{
+    const data=await fetchWithRetry('https://api.jikan.moe/v4/top/anime?page=1&limit=25&filter=bypopularity',1);
+    fallback=(data.data||[]).map(normalizeJikan).filter(isUsableAnime);
+   }
+   if(requestId!==animeRequestId)return;
+   catalogue=fallback;renderDiscover();status.textContent=fallback.length?'Loaded '+fallback.length+' anime from backup database.':'No results found. Try another title or genre.';
+   more.disabled=true;
+  }catch(fallbackError){
+   if(requestId!==animeRequestId)return;
+   console.error('Backup catalogue error:',fallbackError);
+   status.textContent='Anime databases are temporarily unavailable. Please try again shortly.';
+   more.disabled=false;more.textContent='Retry loading anime ↻';
+   if(!catalogue.length)$('#discoverGrid').innerHTML='<div class="empty-hint">Could not load anime right now. Please tap Retry.</div>';
+  }
  }
 }
 let searchTimer;
-$('#discoverSearch').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>{const q=$('#discoverSearch').value.trim();if(q){apiMode='search';apiQuery=q;loadAnime(true)}else{apiMode='top';apiQuery='';loadAnime(true)}},650)});
-$('#genreFilter').addEventListener('change',renderDiscover);
+$('#discoverSearch').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>{const q=$('#discoverSearch').value.trim();if(q){apiMode='search';apiQuery=q;loadAnime(true)}else{apiMode='top';apiQuery='';loadAnime(true)}},500)});
+$('#genreFilter').addEventListener('change',()=>{const g=$('#genreFilter').value.trim();if(g){apiMode='genre';apiQuery=g;loadAnime(true)}else{apiMode='top';apiQuery='';loadAnime(true)}});
 $('#loadMoreAnime').onclick=()=>loadAnime(false);
 function renderLibrary(){const list=anime.filter(a=>currentFilter==='All'||a.status===currentFilter);$('#libraryGrid').innerHTML=list.map(card).join('');$('#libraryEmpty').style.display=list.length?'none':'block';$('#tabAll').textContent=anime.length;bindCardActions($('#libraryGrid'))}
 $$('#libraryTabs .tab').forEach(b=>b.onclick=()=>{$$('#libraryTabs .tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentFilter=b.dataset.status;renderLibrary()});
