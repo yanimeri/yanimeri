@@ -91,13 +91,16 @@ async function fetchWithRetry(url,attempts=3){
  let lastError;
  // Kitsu is a JSON:API service and rejects the generic application/json Accept
  // header with HTTP 406. Jikan uses ordinary JSON.
- const isKitsu=/kitsu\.io/i.test(url);
+ const isKitsu=/kitsu\\.io/i.test(url);
  const headers=isKitsu
   ? {'Accept':'application/vnd.api+json','Content-Type':'application/vnd.api+json'}
   : {'Accept':'application/json'};
  for(let i=0;i<attempts;i++){
+  const controller=new AbortController();
+  const timeoutId=setTimeout(()=>controller.abort(),10000);
   try{
-   const response=await fetch(url,{method:'GET',headers,mode:'cors'});
+   const response=await fetch(url,{method:'GET',headers,mode:'cors',signal:controller.signal});
+   clearTimeout(timeoutId);
    if(response.status===429||response.status>=500){
     if(i<attempts-1){
      const retryAfter=Number(response.headers.get('Retry-After'))*1000;
@@ -108,6 +111,7 @@ async function fetchWithRetry(url,attempts=3){
    if(!response.ok)throw new Error('Request failed ('+response.status+')');
    return await response.json();
   }catch(err){
+   clearTimeout(timeoutId);
    lastError=err;
    if(i<attempts-1)await new Promise(r=>setTimeout(r,600*(i+1)));
   }
@@ -138,7 +142,7 @@ async function loadDiverseAnime(requestId){
    let added=0;
    if(!jikanUnavailable){
     try{
-     const data=await fetchWithRetry(`https://api.jikan.moe/v4/anime?genres=${genre.id}&order_by=popularity&sort=desc&page=${page}&limit=25&sfw=true`,2);
+     const data=await fetchWithRetry(`https://api.jikan.moe/v4/anime?genres=${genre.id}&order_by=popularity&sort=desc&page=${page}&limit=25&sfw=true`,1);
      if(requestId!==animeRequestId)return;
      const before=catalogue.length;
      mergeCatalogue((data.data||[]).map(normalizeJikan).filter(x=>x.title));
