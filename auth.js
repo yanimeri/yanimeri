@@ -80,7 +80,7 @@ window.yanimeriAuthReady = (async () => {
   return true;
 })();
 
-document.addEventListener("DOMContentLoaded", () => {
+function initYanimeriAuthForm() {
   const form = document.getElementById("authForm");
   if (!form) return;
   let mode = "signin";
@@ -165,4 +165,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     finally { submit.disabled = false; }
   });
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initYanimeriAuthForm, { once: true });
+} else {
+  initYanimeriAuthForm();
+}
