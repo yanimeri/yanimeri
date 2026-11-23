@@ -366,7 +366,7 @@ async function renderIdeas(){
   const votes=s.suggestion_votes||[],likes=votes.filter(v=>v.vote===1).length,dislikes=votes.filter(v=>v.vote===-1).length,mine=mySuggestionVotes[s.id]||0;
   return `<article class="diary-entry community-post"><div class="community-post-meta"><small>COMMUNITY SUGGESTION · ${esc(new Date(s.created_at).toLocaleDateString())}</small><span>by ${esc(s.display_name||'Yanimeri member')}</span></div><h3>${esc(s.title)}</h3><p>${esc(s.details||'')}</p><div class="community-votes"><button class="vote-btn ${mine===1?'voted':''}" data-vote="1" data-suggestion="${s.id}" aria-label="Like suggestion">♡ Like <span>${likes}</span></button><button class="vote-btn ${mine===-1?'voted':''}" data-vote="-1" data-suggestion="${s.id}" aria-label="Dislike suggestion">♡ Dislike <span>${dislikes}</span></button></div></article>`;
  }).join('')||'<div class="empty-hint">No suggestions yet. Be the first to share an idea with the community! ♡</div>';
- $('#ideaList [data-vote]').forEach(b=>b.onclick=()=>voteOnSuggestion(b.dataset.suggestion,+b.dataset.vote));
+ $$('#ideaList [data-vote]').forEach(b=>b.onclick=()=>voteOnSuggestion(b.dataset.suggestion,+b.dataset.vote));
 }
 async function voteOnSuggestion(id,vote){
  const current=mySuggestionVotes[id]||0;
