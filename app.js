@@ -366,7 +366,7 @@ async function renderIdeas(){
  publicSuggestions.forEach(s=>(s.suggestion_votes||[]).forEach(v=>{if(v.user_id===window.yanimeriUser.id)mySuggestionVotes[s.id]=v.vote}));
  list.innerHTML=publicSuggestions.map(s=>{
   const votes=s.suggestion_votes||[],likes=votes.filter(v=>v.vote===1).length,dislikes=votes.filter(v=>v.vote===-1).length,mine=mySuggestionVotes[s.id]||0;
-  return `<article class="diary-entry community-post"><div class="community-post-meta"><small>COMMUNITY SUGGESTION · ${esc(new Date(s.created_at).toLocaleDateString())}</small><span>by ${esc(s.display_name||'Yanimeri member')}</span></div><h3>${esc(s.title)}</h3><p>${esc(s.details||'')}</p><div class="community-votes"><button class="vote-btn ${mine===1?'voted':''}" data-vote="1" data-suggestion="${s.id}" aria-label="Like suggestion">♡ Like <span>${likes}</span></button><button class="vote-btn ${mine===-1?'voted':''}" data-vote="-1" data-suggestion="${s.id}" aria-label="Dislike suggestion">♡ Dislike <span>${dislikes}</span></button></div>${isYanimeriAdmin?`<button class="secondary-btn admin-delete-suggestion" data-delete-suggestion="${s.id}">Delete suggestion</button>`:''}</article>`;
+  return `<article class="diary-entry community-post"><div class="community-post-meta"><small>COMMUNITY SUGGESTION · ${esc(new Date(s.created_at).toLocaleDateString())}</small><span>by ${esc(s.display_name||'Yanimeri member')}</span></div><h3>${esc(s.title)}</h3><p>${esc(s.details||'')}</p><div class="community-votes"><button class="vote-btn ${mine===1?'voted':''}" data-vote="1" data-suggestion="${s.id}" aria-label="Like suggestion">♡ Like <span>${likes}</span></button><button class="vote-btn ${mine===-1?'voted':''}" data-vote="-1" data-suggestion="${s.id}" aria-label="Dislike suggestion">♡ Dislike <span>${dislikes}</span></button></div>${isYanimeriAdmin?`<button class="vote-btn admin-delete-suggestion" data-delete-suggestion="${s.id}">Delete suggestion</button>`:''}</article>`;
  }).join('')||'<div class="empty-hint">No suggestions yet. Be the first to share an idea with the community! ♡</div>';
  queryAll('#ideaList [data-vote]').forEach(b=>b.onclick=()=>voteOnSuggestion(b.dataset.suggestion,+b.dataset.vote));
   if(isYanimeriAdmin) queryAll('#ideaList [data-delete-suggestion]').forEach(b=>b.onclick=()=>deleteCommunitySuggestion(b.dataset.deleteSuggestion));
@@ -374,7 +374,7 @@ async function renderIdeas(){
 async function deleteCommunitySuggestion(id){
  if(window.yanimeriUser?.id!==YANIMERI_ADMIN_ID){toast('You are not allowed to delete suggestions.');return}
  if(!confirm('Delete this community suggestion? This cannot be undone.')) return;
- const {error}=await window.yanimeriSupabase.from('suggestions').delete().eq('id',id);
+ const {error}=await window.yanimeriSupabase.rpc('admin_delete_suggestion',{p_suggestion_id:id});
  if(error){console.error('Could not delete community suggestion:',error);toast('The suggestion could not be deleted. Please check admin permissions. ♡');return}
  toast('Suggestion deleted. ♡');
  await renderIdeas();
