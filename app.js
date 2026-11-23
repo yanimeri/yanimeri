@@ -44,7 +44,7 @@ let companion = JSON.parse(localStorage.getItem('yanimeri_companion') || 'null')
 let account = JSON.parse(localStorage.getItem('yanimeri_demo_account') || 'null');
 let selectedCompanionId = companion?.id || '';
 
-let anime = JSON.parse(localStorage.getItem('yanimeri_anime') || 'null') || starterAnime;
+let anime = JSON.parse(localStorage.getItem('yanimeri_anime') || 'null') || [];
 let entries = JSON.parse(localStorage.getItem('yanimeri_diary') || '[]');
 let ideas = JSON.parse(localStorage.getItem('yanimeri_ideas') || '[]');
 let profile = JSON.parse(localStorage.getItem('yanimeri_profile') || 'null') || {name:'Little star',bio:'Collecting stories, one episode at a time ♡',avatar:'🌷',avatarImage:'',bannerImage:'',accent:'#c92f43',background:'#fffafa',sidebarColor:'#fffafa',fontColor:'#44363a',font:'DM Sans'};
