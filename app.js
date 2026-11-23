@@ -14,7 +14,7 @@ const starterAnime = [
  {id:'a7',title:'A Sign of Affection',genres:'Romance · Slice of Life',status:'Plan to watch',episode:0,rating:'',emoji:'❀',tone:'pink'},
  {id:'a8',title:'Nichijou',genres:'Comedy · Slice of Life',status:'Watching',episode:3,rating:'',emoji:'☁',tone:'blue'}
 ];
-const $ = s => document.querySelector(s), $ = s => [...document.querySelectorAll(s)];
+const $ = s => document.querySelector(s), queryAll = s => [...document.querySelectorAll(s)];
 const YANIMERI_ADMIN_ID = '00255878-8fea-4490-8e89-4bf559a9395c';
 
 const companionChoices = [
@@ -64,9 +64,9 @@ function persist(){
  }
 }
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2400)}
-function go(page){$$('.page').forEach(p=>p.classList.toggle('active',p.id===page));$$('.nav').forEach(n=>n.classList.toggle('active',n.dataset.page===page));window.scrollTo({top:0,behavior:'smooth'});if(page==='library')renderLibrary();if(page==='profile')renderProfile();if(page==='ideas')renderIdeas()}
-$$('.nav').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
-$$('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));
+function go(page){queryAll('.page').forEach(p=>p.classList.toggle('active',p.id===page));queryAll('.nav').forEach(n=>n.classList.toggle('active',n.dataset.page===page));window.scrollTo({top:0,behavior:'smooth'});if(page==='library')renderLibrary();if(page==='profile')renderProfile();if(page==='ideas')renderIdeas()}
+queryAll('.nav').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
+queryAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));
 $('.brand').addEventListener('click',e=>{e.preventDefault();go('home')});
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function poster(a){
@@ -297,19 +297,19 @@ $('#discoverSearch').addEventListener('input',()=>{clearTimeout(searchTimer);sea
 $('#genreFilter').addEventListener('change',()=>{const g=$('#genreFilter').value.trim();if(g){apiMode='genre';apiQuery=g;loadAnime(true)}else{apiMode='top';apiQuery='';loadAnime(true)}});
 $('#loadMoreAnime').onclick=()=>loadAnime(false);
 function renderLibrary(){const list=anime.filter(a=>currentFilter==='All'||a.status===currentFilter);$('#libraryGrid').innerHTML=list.map(card).join('');$('#libraryEmpty').style.display=list.length?'none':'block';$('#tabAll').textContent=anime.length;bindCardActions($('#libraryGrid'))}
-$$('#libraryTabs .tab').forEach(b=>b.onclick=()=>{$$('#libraryTabs .tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentFilter=b.dataset.status;renderLibrary()});
-$('#globalSearch').addEventListener('input',e=>{go('library');currentFilter='All';$$('#libraryTabs .tab').forEach(x=>x.classList.toggle('active',x.dataset.status==='All'));renderLibrary();const q=e.target.value.toLowerCase();$('#libraryGrid').innerHTML=anime.filter(a=>(a.title+' '+a.genres).toLowerCase().includes(q)).map(card).join('');bindCardActions($('#libraryGrid'))});
+queryAll('#libraryTabs .tab').forEach(b=>b.onclick=()=>{queryAll('#libraryTabs .tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentFilter=b.dataset.status;renderLibrary()});
+$('#globalSearch').addEventListener('input',e=>{go('library');currentFilter='All';queryAll('#libraryTabs .tab').forEach(x=>x.classList.toggle('active',x.dataset.status==='All'));renderLibrary();const q=e.target.value.toLowerCase();$('#libraryGrid').innerHTML=anime.filter(a=>(a.title+' '+a.genres).toLowerCase().includes(q)).map(card).join('');bindCardActions($('#libraryGrid'))});
 const dlg=$('#animeDialog');let editingId=null;
 function openAnime(a=null){editingId=a?.id||null;$('#dialogTitle').textContent=a?'Edit anime':'Add an anime';$('#animeTitle').value=a?.title||'';$('#animeGenres').value=a?.genres||'';$('#animeStatus').value=a?.status||'Watching';$('#animeEpisode').value=a?.episode||0;$('#animeRating').value=a?.rating||'';$('#submitAnime').textContent=a?'Save changes':'Add to library ♡';dlg.showModal()}
 $('#addAnimeTop').onclick=()=>openAnime();
 $('#animeForm').addEventListener('submit',e=>{if(e.submitter?.value==='cancel')return;e.preventDefault();const item={id:editingId||'u'+Date.now(),title:$('#animeTitle').value.trim(),genres:$('#animeGenres').value.trim()||'Anime',status:$('#animeStatus').value,episode:+$('#animeEpisode').value||0,rating:$('#animeRating').value,emoji:'✧',tone:'pink'};if(!item.title)return;if(editingId)anime=anime.map(a=>a.id===editingId?{...a,...item}:a);else anime.unshift(item);persist();dlg.close();renderAll();toast(editingId?'Changes saved':'Added to your library ♡')});
 $('#saveDiary').onclick=()=>{const value=$('#diaryText').value.trim();if(!value){toast('Write a little note first ♡');return}entries.unshift({text:value,date:new Date().toLocaleString()});$('#diaryText').value='';persist();renderDiary();toast('Your private entry was saved')};
-function renderDiary(){$('#diaryEntries').innerHTML=entries.map((e,i)=>`<article class="diary-entry"><small>🔒 PRIVATE · ${esc(e.date)}</small><p>${esc(e.text)}</p><button class="text-btn" data-entry-delete="${i}">Delete entry</button></article>`).join('')||'<div class="empty-hint">Your diary is still blank. That’s okay — write whenever you feel like it.</div>';$$('[data-entry-delete]').forEach(b=>b.onclick=()=>{entries.splice(+b.dataset.entryDelete,1);persist();renderDiary();toast('Entry deleted')})}
+function renderDiary(){$('#diaryEntries').innerHTML=entries.map((e,i)=>`<article class="diary-entry"><small>🔒 PRIVATE · ${esc(e.date)}</small><p>${esc(e.text)}</p><button class="text-btn" data-entry-delete="${i}">Delete entry</button></article>`).join('')||'<div class="empty-hint">Your diary is still blank. That’s okay — write whenever you feel like it.</div>';queryAll('[data-entry-delete]').forEach(b=>b.onclick=()=>{entries.splice(+b.dataset.entryDelete,1);persist();renderDiary();toast('Entry deleted')})}
 function cooldownLabel(timestamp,days,label){if(!timestamp)return 'You can change your '+label+' now.';const next=new Date(new Date(timestamp).getTime()+days*86400000);const remaining=next-Date.now();if(remaining<=0)return 'You can change your '+label+' now.';const hours=Math.ceil(remaining/3600000);const daysLeft=Math.floor(hours/24),hoursLeft=hours%24;return 'Next change available in '+(daysLeft?daysLeft+'d ':'')+(hoursLeft?hoursLeft+'h':'')+'.';}
 function renderProfile(){profile.accent=profile.accent||'#c92f43';profile.background=profile.background||'#fffafa';profile.font=profile.font||'DM Sans';$('#profileName').value=profile.name;$('#profileBio').value=profile.bio;$('#profileUsername').value=window.yanimeriProfileData?.username||'';const usernameLocked=!!window.yanimeriProfileData?.username_changed_at&&Date.now()<new Date(window.yanimeriProfileData.username_changed_at).getTime()+30*86400000;const displayLocked=!!window.yanimeriProfileData?.display_name_changed_at&&Date.now()<new Date(window.yanimeriProfileData.display_name_changed_at).getTime()+86400000;$('#profileUsername').disabled=usernameLocked;$('#profileName').disabled=displayLocked;$('#usernameCooldown').textContent=cooldownLabel(window.yanimeriProfileData?.username_changed_at,30,'username');$('#displayNameCooldown').textContent=cooldownLabel(window.yanimeriProfileData?.display_name_changed_at,1,'display name');$('#profileNameDisplay').textContent=profile.name;$('#profileBioDisplay').textContent=profile.bio;$('#profileAvatar').innerHTML=profile.avatarImage?`<img src="${profile.avatarImage}" alt="Profile picture">`:esc(profile.avatar);$('#profileBanner').style.backgroundImage=profile.bannerImage?`url("${profile.bannerImage}")`:'';
  $('#profileBanner').style.backgroundPosition=`${profile.bannerX??50}% ${profile.bannerY??50}%`;
  $('#profileBanner').style.backgroundSize=`${profile.bannerZoom??100}% auto`;
- $('#bannerX').value=profile.bannerX??50;$('#bannerY').value=profile.bannerY??50;$('#bannerZoom').value=profile.bannerZoom??100;updateBannerPreview();$('#accentColor').value=profile.accent;$('#backgroundColor').value=profile.background;$('#sidebarColor').value=profile.sidebarColor||'#fffafa';$('#fontChoice').value=profile.font;$('#fontColor').value=profile.fontColor||'#44363a';$$('#avatarChoices button').forEach(b=>{b.classList.toggle('chosen',b.textContent===profile.avatar);b.onclick=()=>{selectedAvatar=b.textContent;profile.avatarImage='';$$('#avatarChoices button').forEach(x=>x.classList.toggle('chosen',x===b));$('#profileAvatar').textContent=selectedAvatar}})}
+ $('#bannerX').value=profile.bannerX??50;$('#bannerY').value=profile.bannerY??50;$('#bannerZoom').value=profile.bannerZoom??100;updateBannerPreview();$('#accentColor').value=profile.accent;$('#backgroundColor').value=profile.background;$('#sidebarColor').value=profile.sidebarColor||'#fffafa';$('#fontChoice').value=profile.font;$('#fontColor').value=profile.fontColor||'#44363a';queryAll('#avatarChoices button').forEach(b=>{b.classList.toggle('chosen',b.textContent===profile.avatar);b.onclick=()=>{selectedAvatar=b.textContent;profile.avatarImage='';queryAll('#avatarChoices button').forEach(x=>x.classList.toggle('chosen',x===b));$('#profileAvatar').textContent=selectedAvatar}})}
 function readImage(file,callback){if(!file)return;if(file.size>1200000){toast('Please choose an image smaller than 1.2 MB ♡');return}const reader=new FileReader();reader.onload=()=>callback(reader.result);reader.readAsDataURL(file)}
 $('#avatarUpload').onchange=e=>readImage(e.target.files[0],v=>{profile.avatarImage=v;$('#profileAvatar').innerHTML=`<img src="${v}" alt="Profile picture">`;toast('Profile picture preview updated')});
 $('#cameraUpload').onchange=e=>readImage(e.target.files[0],v=>{profile.avatarImage=v;$('#profileAvatar').innerHTML=`<img src="${v}" alt="Profile picture">`;toast('Camera picture preview updated')});
@@ -368,8 +368,8 @@ async function renderIdeas(){
   const votes=s.suggestion_votes||[],likes=votes.filter(v=>v.vote===1).length,dislikes=votes.filter(v=>v.vote===-1).length,mine=mySuggestionVotes[s.id]||0;
   return `<article class="diary-entry community-post"><div class="community-post-meta"><small>COMMUNITY SUGGESTION · ${esc(new Date(s.created_at).toLocaleDateString())}</small><span>by ${esc(s.display_name||'Yanimeri member')}</span></div><h3>${esc(s.title)}</h3><p>${esc(s.details||'')}</p><div class="community-votes"><button class="vote-btn ${mine===1?'voted':''}" data-vote="1" data-suggestion="${s.id}" aria-label="Like suggestion">♡ Like <span>${likes}</span></button><button class="vote-btn ${mine===-1?'voted':''}" data-vote="-1" data-suggestion="${s.id}" aria-label="Dislike suggestion">♡ Dislike <span>${dislikes}</span></button></div>${isYanimeriAdmin?`<button class="secondary-btn admin-delete-suggestion" data-delete-suggestion="${s.id}">Delete suggestion</button>`:''}</article>`;
  }).join('')||'<div class="empty-hint">No suggestions yet. Be the first to share an idea with the community! ♡</div>';
- $('#ideaList [data-vote]').forEach(b=>b.onclick=()=>voteOnSuggestion(b.dataset.suggestion,+b.dataset.vote));
-  if(isYanimeriAdmin) $('#ideaList [data-delete-suggestion]').forEach(b=>b.onclick=()=>deleteCommunitySuggestion(b.dataset.deleteSuggestion));
+ queryAll('#ideaList [data-vote]').forEach(b=>b.onclick=()=>voteOnSuggestion(b.dataset.suggestion,+b.dataset.vote));
+  if(isYanimeriAdmin) queryAll('#ideaList [data-delete-suggestion]').forEach(b=>b.onclick=()=>deleteCommunitySuggestion(b.dataset.deleteSuggestion));
 }
 async function deleteCommunitySuggestion(id){
  if(window.yanimeriUser?.id!==YANIMERI_ADMIN_ID){toast('You are not allowed to delete suggestions.');return}
@@ -412,9 +412,9 @@ function renderCompanionChoices(){
  const animeGroups=['Death Note','The Apothecary Diaries','Spy x Family'];
  const card=c=>`<button class="companion-choice ${selectedCompanionId===c.id?'selected':''}" data-companion="${c.id}"><span class="choice-art"><img src="${c.image}" alt="${c.name}" onerror="this.alt='Image link unavailable';this.style.opacity='.25'"></span><b>${c.name}</b><small>${c.mood}</small></button>`;
  $('#companionOptions').innerHTML=`<section class="companion-category"><h2>Fruit Kitties</h2><div class="companion-category-grid">${fruit.map(card).join('')}</div></section><section class="companion-category"><h2>Anime Companions</h2>${animeGroups.map(group=>`<div class="companion-subcategory"><h3>${group}</h3><div class="companion-category-grid">${companionChoices.filter(c=>c.category===group).map(card).join('')}</div></div>`).join('')}</section>`;
- $$('#companionOptions [data-companion]').forEach(b=>b.onclick=()=>{
+ queryAll('#companionOptions [data-companion]').forEach(b=>b.onclick=()=>{
   selectedCompanionId=b.dataset.companion;
-  $$('#companionOptions .companion-choice').forEach(x=>x.classList.toggle('selected',x===b));
+  queryAll('#companionOptions .companion-choice').forEach(x=>x.classList.toggle('selected',x===b));
   $('#finishOnboarding').disabled=false;
  });
 }
@@ -442,7 +442,7 @@ function setupCompanionHelper(){
 }
 $('#helperCharacter').onclick=()=>{$('#helperPopover').hidden=!$('#helperPopover').hidden};
 $('#helperClose').onclick=()=>$('#helperPopover').hidden=true;
-$$('[data-help-page]').forEach(b=>b.onclick=()=>{$('#helperPopover').hidden=true;go(b.dataset.helpPage);toast(`Let's visit ${b.textContent.toLowerCase()}!`)});
+queryAll('[data-help-page]').forEach(b=>b.onclick=()=>{$('#helperPopover').hidden=true;go(b.dataset.helpPage);toast(`Let's visit ${b.textContent.toLowerCase()}!`)});
 
 function renderAll(){renderHome();renderDiscover();renderLibrary();renderDiary();renderProfile();$('.mini-profile b').textContent=profile.name||'Little star';$('.mini-profile .avatar').innerHTML=profile.avatarImage?`<img src="${profile.avatarImage}" alt="">`:esc(profile.avatar||'🌷');applyTheme();renderIdeas()}
 renderAll();showOnboarding();loadAnime(true);
